@@ -1,20 +1,16 @@
-import { useState } from 'react'
-import './App.css'
+// src/App.tsx
+import React from 'react';
+import { ConfigProvider } from 'antd';
+import zhCN from 'antd/lib/locale/zh_CN';
+import AppRouter from './router';
+import './App.css';
 
-function App() {
-  const [count, setCount] = useState(0)
-
+const App: React.FC = () => {
   return (
-    <div className="app">
-      <header className="app-header">
-        <h1>基于区块链的新能源车辆碳减排计量系统</h1>
-        <p>系统正在建设中...</p>
-        <button onClick={() => setCount((count) => count + 1)}>
-          点击计数: {count}
-        </button>
-      </header>
-    </div>
-  )
-}
+    <ConfigProvider locale={zhCN}>
+      <AppRouter />
+    </ConfigProvider>
+  );
+};
 
-export default App
+export default App;
