@@ -1,0 +1,20 @@
+{
+  "name": "blockchain-ev-carbon-monitor-contracts",
+  "version": "0.1.0",
+  "private": true,
+  "description": "智能合约开发包",
+  "scripts": {
+    "compile": "truffle compile",
+    "migrate": "truffle migrate",
+    "test": "truffle test",
+    "coverage": "truffle run coverage"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.9.0",
+    "@truffle/hdwallet-provider": "^2.1.10"
+  },
+  "devDependencies": {
+    "solidity-coverage": "^0.8.2",
+    "truffle": "^5.8.2"
+  }
+}

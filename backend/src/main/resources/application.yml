@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: ev-carbon-monitor
+  profiles:
+    active: dev
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:postgresql://localhost:5432/evcarbonmonitor
+    username: postgres
+    password: password
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+
+blockchain:
+  web3-provider: http://localhost:8545
+
+logging:
+  level:
+    root: INFO
+    com.example.evcarbonmonitor: DEBUG
