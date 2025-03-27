@@ -42,15 +42,15 @@
 
 ### 区块链实现
 - [x] 搭建以太坊私有链环境
-- [ ] 实现智能合约
+- [x] 实现智能合约
   - [x] AccessControl合约
   - [x] VehicleRegistry合约
   - [x] CarbonCalculator合约
-  - [ ] CreditsGenerator合约
-  - [ ] CreditsManager合约
-  - [ ] ContractManager合约
-- [ ] 智能合约单元测试
-- [ ] 智能合约部署脚本
+  - [x] CreditsGenerator合约
+  - [x] CreditsManager合约
+  - [x] ContractManager合约
+- [x] 智能合约单元测试
+- [x] 智能合约部署脚本
 
 ### 后端实现
 - [ ] 搭建后端项目结构
@@ -127,9 +127,9 @@
 ## 测试阶段
 
 ### 单元测试
+- [x] 智能合约单元测试
 - [ ] 后端单元测试
 - [ ] 前端组件测试
-- [ ] 智能合约单元测试
 
 ### 集成测试
 - [ ] API集成测试
@@ -175,7 +175,7 @@
 - [x] 完成API接口设计文档
 - [x] 创建项目进度跟踪TODO列表
 
-### 会话2 (当前会话)
+### 会话2
 - [x] 前端基础架构实现
   - [x] 创建项目基础结构
   - [x] 配置构建工具(Vite)
@@ -187,17 +187,25 @@
   - [x] 实现VehicleRegistry合约
   - [x] 实现CarbonCalculator合约
 
+### 会话3 (当前会话)
+- [x] 继续智能合约实现
+  - [x] 实现CreditsGenerator合约
+  - [x] 实现CreditsManager合约
+  - [x] 实现ContractManager合约
+- [x] 智能合约单元测试
+- [x] 智能合约部署脚本
+
 ## 下一步计划
 
-### 会话3
+### 会话4
 - [ ] 实现管理平台的车辆管理功能
   - [ ] 车辆列表页面
   - [ ] 车辆添加表单
   - [ ] 与智能合约交互
-- [ ] 继续智能合约实现
-  - [ ] 实现CreditsGenerator合约
-  - [ ] 实现CreditsManager合约
 - [ ] 开始后端基础结构搭建
+  - [ ] 项目结构设置
+  - [ ] Web3j配置
+  - [ ] 基础API层实现
 
 ## 附注
 
