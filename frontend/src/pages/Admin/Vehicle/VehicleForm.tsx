@@ -28,29 +28,35 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ mode }) => {
     try {
       setLoading(true);
       // 实际项目中应该使用API调用
-      // const response = await vehicleAPI.getVehicleById(vinCode);
-      // const vehicleData = response.data;
-      
-      // 使用模拟数据
-      const mockData = {
-        vin: "LSVAU2180N2183294",
-        model: "比亚迪汉EV",
-        licensePlate: "京A12345",
-        manufacturer: "比亚迪",
-        productionYear: 2022,
-        batteryCapacity: 76.9,
-        maxRange: 605,
-        registerDate: "2022-06-15",
-        status: "online"
-      };
-      
-      form.setFieldsValue(mockData);
+      const response = await vehicleAPI.getVehicleById(vinCode);
+      form.setFieldsValue(response.data);
     } catch (error) {
       message.error('加载车辆数据失败');
     } finally {
       setLoading(false);
     }
   };
+      
+  //     // 使用模拟数据
+  //     const mockData = {
+  //       vin: "LSVAU2180N2183294",
+  //       model: "比亚迪汉EV",
+  //       licensePlate: "京A12345",
+  //       manufacturer: "比亚迪",
+  //       productionYear: 2022,
+  //       batteryCapacity: 76.9,
+  //       maxRange: 605,
+  //       registerDate: "2022-06-15",
+  //       status: "online"
+  //     };
+      
+  //     form.setFieldsValue(mockData);
+  //   } catch (error) {
+  //     message.error('加载车辆数据失败');
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
   
   const onFinish = async (values: any) => {
     try {
@@ -59,11 +65,15 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ mode }) => {
       if (mode === 'add') {
         // 实际项目中应该使用API调用
         // await vehicleAPI.createVehicle(values);
+        await vehicleAPI.createVehicle(values);
         message.success('车辆添加成功');
+        // message.success('车辆添加成功');
       } else {
         // 实际项目中应该使用API调用
         // await vehicleAPI.updateVehicle(vin as string, values);
+        await vehicleAPI.updateVehicle(vin as string, values);
         message.success('车辆更新成功');
+        // message.success('车辆更新成功');
       }
       
       navigate('/admin/vehicles');
@@ -110,9 +120,8 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ mode }) => {
                 { required: true, message: '请输入车辆VIN码' },
                 { pattern: /^[A-HJ-NPR-Z0-9]{17}$/, message: 'VIN码格式不正确' }
               ]}
-              disabled={mode === 'edit'}
             >
-              <Input placeholder="请输入17位车辆识别码" maxLength={17} />
+              <Input placeholder="请输入17位车辆识别码" maxLength={17} disabled={mode === 'edit'} />
             </Form.Item>
           </Col>
           

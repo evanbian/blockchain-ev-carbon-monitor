@@ -66,46 +66,11 @@ const VehicleImport: React.FC<VehicleImportProps> = ({ open, onCancel, onSuccess
     try {
       setUploading(true);
       
-      // 实际项目中调用API
-      // const result = await vehicleAPI.importVehicles(file);
-      
-      // 模拟导入结果
-      const mockResult = {
-        total: 10,
-        success: 8,
-        failed: 2,
-        failures: [
-          { 
-            line: 3, 
-            vin: "INVALID_VIN",
-            reason: "VIN码格式不正确" 
-          },
-          { 
-            line: 7, 
-            vin: "LSVAU2180N2123456",
-            reason: "车辆已存在" 
-          }
-        ],
-        newVehicles: [
-          {
-            vin: "LSVAU2180N2183295",
-            model: "比亚迪汉EV",
-            licensePlate: "京A12346"
-          },
-          {
-            vin: "LSVAU2180N2183296",
-            model: "比亚迪汉EV",
-            licensePlate: "京A12347"
-          }
-        ]
-      };
-      
-      // 模拟API延迟
-      setTimeout(() => {
-        setImportResult(mockResult);
-        setCurrentStep(2);
-        setUploading(false);
-      }, 1500);
+      // 使用真实API调用
+      const response = await vehicleAPI.importVehicles(file);
+      setImportResult(response.data);
+      setCurrentStep(2);
+      setUploading(false);
       
     } catch (error) {
       message.error('导入失败');

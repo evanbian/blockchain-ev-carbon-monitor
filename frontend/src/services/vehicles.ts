@@ -1,9 +1,10 @@
-// src/services/vehicles.ts
+// frontend/src/services/vehicles.ts
 import api from './api';
 import config from '@/config';
 import { Vehicle } from '@/types/vehicle';
 
 const vehicleAPI = {
+  baseUrl: config.api.baseUrl,
   /**
    * 获取车辆列表
    * @param params 查询参数 (page, size, status, sort, order)
@@ -49,6 +50,17 @@ const vehicleAPI = {
   deleteVehicle: async (vin: string) => {
     return api.delete(`${config.api.vehiclesUrl}/${vin}`);
   },
+
+  /**
+   * 调试: 获取所有车辆
+   * @returns 所有车辆列表
+   */
+  getAllVehiclesDebug: async () => {
+    console.log("调用调试API获取所有车辆");
+    const response = await api.get(`${config.api.vehiclesUrl}/debug/all`);
+    console.log("调试API响应:", response);
+    return response;
+  },
   
   /**
    * 批量导入车辆
@@ -64,31 +76,7 @@ const vehicleAPI = {
         'Content-Type': 'multipart/form-data'
       }
     });
-  },
-  
-  /**
-   * 获取车辆行驶数据
-   * @param vin 车辆VIN码
-   * @param params 查询参数 (startDate, endDate)
-   * @returns 行驶数据
-   */
-  getVehicleDrivingData: async (vin: string, params: any) => {
-    return api.get(`${config.api.analyticsUrl}/driving-data`, { 
-      params: { vin, ...params } 
-    });
-  },
-  
-  /**
-   * 获取车辆碳减排数据
-   * @param vin 车辆VIN码
-   * @param params 查询参数 (startDate, endDate)
-   * @returns 碳减排数据
-   */
-  getVehicleCarbonData: async (vin: string, params: any) => {
-    return api.get(`${config.api.analyticsUrl}/carbon-reduction/vehicle`, { 
-      params: { vin, ...params } 
-    });
-  },
+  }
 };
 
 export default vehicleAPI;

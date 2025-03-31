@@ -41,5 +41,6 @@ const vehicleSlice = createSlice({
   },
 });
 
+
 export const { fetchVehiclesStart, fetchVehiclesSuccess, fetchVehiclesFailure } = vehicleSlice.actions;
 export default vehicleSlice.reducer;

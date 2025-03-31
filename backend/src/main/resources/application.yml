@@ -3,21 +3,12 @@ spring:
     name: ev-carbon-monitor
   profiles:
     active: dev
-
-server:
-  port: 8080
-  servlet:
-    context-path: /api
-
----
-spring:
-  config:
-    activate:
-      on-profile: dev
+  main:
+    allow-bean-definition-overriding: true
   datasource:
     url: jdbc:postgresql://localhost:5432/evcarbonmonitor
-    username: postgres
-    password: password
+    username: ${USER}
+    password: ""
   jpa:
     hibernate:
       ddl-auto: update
@@ -25,6 +16,11 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
 
 blockchain:
   web3-provider: http://localhost:8545

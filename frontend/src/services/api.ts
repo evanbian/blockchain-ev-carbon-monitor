@@ -27,11 +27,26 @@ api.interceptors.request.use(
 // 响应拦截器，处理错误
 api.interceptors.response.use(
   (response) => {
-    // 直接返回data部分，简化使用
-    if (response.data && response.data.data !== undefined) {
-      return response.data.data;
+    // 处理我们后端的统一响应格式
+    if (response.data && typeof response.data === 'object') {
+      // 检查是否是我们的API响应格式
+      if (response.data.hasOwnProperty('success')) {
+        if (response.data.success) {
+          // 成功响应，返回data部分
+          return response.data;
+        } else {
+          // 业务逻辑错误
+          return Promise.reject({
+            response: {
+              status: response.data.code || 400,
+              data: response.data
+            }
+          });
+        }
+      }
     }
-    return response.data;
+    // 直接返回响应
+    return response;
   },
   (error) => {
     // 处理401等错误

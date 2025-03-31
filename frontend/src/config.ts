@@ -39,7 +39,7 @@ export default {
   api: {
     baseUrl: API_BASE_URL,
     timeout: 20000,  // 默认请求超时时间: 20s
-    vehiclesUrl: `${API_BASE_URL}/v1/vehicles`,
+    vehiclesUrl: `${API_BASE_URL}/v1/vehicles`,  // 确保这里是v1/vehicles
     analyticsUrl: `${API_BASE_URL}/v1/analytics`,
     blockchainUrl: `${API_BASE_URL}/v1/blockchain`,
     creditsUrl: `${API_BASE_URL}/v1/credits`,
