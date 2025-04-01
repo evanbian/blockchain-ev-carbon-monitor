@@ -1,12 +1,17 @@
 // src/pages/Display/index.tsx
 import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import DisplayOverview from './Overview';
+import BlockchainExplorer from './Explorer';
 
 const DisplayPage: React.FC = () => {
   return (
-    <div>
-      <h2>展示平台</h2>
-      <p>碳积分实时展示和区块链浏览</p>
-    </div>
+    <Routes>
+      <Route path="/" element={<DisplayOverview />} />
+      <Route path="/overview" element={<DisplayOverview />} />
+      <Route path="/explorer" element={<BlockchainExplorer />} />
+      <Route path="*" element={<Navigate to="/display" replace />} />
+    </Routes>
   );
 };
 
