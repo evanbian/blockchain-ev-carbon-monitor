@@ -12,6 +12,8 @@
   "dependencies": {
     "@amap/amap-jsapi-loader": "^1.0.1",
     "@ant-design/icons": "^5.0.1",
+    "@react-three/drei": "^9.122.0",
+    "@react-three/fiber": "^8.18.0",
     "@reduxjs/toolkit": "^1.9.5",
     "@types/moment": "^2.11.29",
     "antd": "^5.4.0",
@@ -24,6 +26,7 @@
     "react-query": "^3.39.3",
     "react-redux": "^8.0.5",
     "react-router-dom": "^6.10.0",
+    "three": "^0.175.0",
     "web3": "^1.9.0"
   },
   "devDependencies": {

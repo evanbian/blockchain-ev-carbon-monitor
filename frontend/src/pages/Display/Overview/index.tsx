@@ -2,9 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Typography, Space } from 'antd';
 import { ArrowUpOutlined, ThunderboltOutlined, EnvironmentOutlined } from '@ant-design/icons';
-import VehicleHeatMap from '../components/VehicleHeatMap';
-import BlockchainDataFlow from '../components/BlockchainDataFlow';
+// 导入新组件
+import BlockchainDisplay3D from '../components/BlockchainDisplay3D';
+import VehicleMapDisplay from '../components/VehicleMapDisplay';
 import VehicleDataScroll from '../components/VehicleDataScroll';
+import AnimatedCounter from '../components/AnimatedCounter';
+import CarbonCreditsParticles from '../components/CarbonCreditsParticles';
+// import BlockchainECharts from '../components/BlockchainECharts';
 
 const { Title, Text } = Typography;
 
@@ -56,7 +60,8 @@ const DisplayOverview: React.FC = () => {
               position: 'relative'
             }}
           >
-            <Title level={4} style={{ color: 'white', margin: 0 }}>总碳积分</Title>
+            <CarbonCreditsParticles style={{ position: 'absolute', width: '100%', height: '100%', top: 0, left: 0 }} />
+            <Title level={4} style={{ color: 'white', margin: 0, position: 'relative', zIndex: 2 }}>总碳积分</Title>
             <div style={{ 
               display: 'flex', 
               alignItems: 'center', 
@@ -73,9 +78,10 @@ const DisplayOverview: React.FC = () => {
                 padding: 8,
                 borderRadius: '50%'
               }} />
-              <span style={{ fontSize: 48, fontWeight: 'bold', color: 'white' }}>
-                {totalCredits.toFixed(1)}
-              </span>
+              <AnimatedCounter 
+                value={totalCredits} 
+                style={{ fontSize: 48, fontWeight: 'bold', color: 'white' }}
+              />
             </div>
             <div style={{ 
               marginTop: 16, 
@@ -108,6 +114,9 @@ const DisplayOverview: React.FC = () => {
             }}></div>
           </Card>
         </Col>
+        
+        {/* 其他统计卡片... */}
+        
         <Col span={8}>
           <Card 
             bordered={false} 
@@ -138,10 +147,11 @@ const DisplayOverview: React.FC = () => {
                 padding: 8,
                 borderRadius: '50%'
               }} />
-              <span style={{ fontSize: 48, fontWeight: 'bold', color: 'white' }}>
-                {totalReduction.toFixed(1)}
-              </span>
-              <span style={{ fontSize: 20, marginLeft: 8, color: 'white' }}>kg</span>
+              <AnimatedCounter 
+                value={totalReduction} 
+                style={{ fontSize: 48, fontWeight: 'bold', color: 'white' }}
+                suffix={<span style={{ fontSize: 20, marginLeft: 8, color: 'white' }}>kg</span>}
+              />
             </div>
             <div style={{ 
               marginTop: 16, 
@@ -150,7 +160,10 @@ const DisplayOverview: React.FC = () => {
               zIndex: 2
             }}>
               <Text style={{ color: 'rgba(255,255,255,0.8)' }}>相当于种植 </Text>
-              <Text style={{ color: 'white', fontWeight: 'bold' }}>{treesEquivalent}</Text>
+              <AnimatedCounter 
+                value={treesEquivalent} 
+                style={{ color: 'white', fontWeight: 'bold' }}
+              />
               <Text style={{ color: 'rgba(255,255,255,0.8)' }}> 棵树</Text>
             </div>
             <div style={{
@@ -175,6 +188,7 @@ const DisplayOverview: React.FC = () => {
             }}></div>
           </Card>
         </Col>
+        
         <Col span={8}>
           <Card 
             bordered={false} 
@@ -205,10 +219,11 @@ const DisplayOverview: React.FC = () => {
                 padding: 8,
                 borderRadius: '50%'
               }} />
-              <span style={{ fontSize: 48, fontWeight: 'bold', color: 'white' }}>
-                {vehicleCount}
-              </span>
-              <span style={{ fontSize: 20, marginLeft: 8, color: 'white' }}>辆</span>
+              <AnimatedCounter 
+                value={vehicleCount} 
+                style={{ fontSize: 48, fontWeight: 'bold', color: 'white' }}
+                suffix={<span style={{ fontSize: 20, marginLeft: 8, color: 'white' }}>辆</span>}
+              />
             </div>
             <div style={{ 
               marginTop: 16, 
@@ -217,7 +232,10 @@ const DisplayOverview: React.FC = () => {
               zIndex: 2
             }}>
               <Text style={{ color: 'rgba(255,255,255,0.8)' }}>在线车辆: </Text>
-              <Text style={{ color: 'white', fontWeight: 'bold' }}>{onlineVehicles}</Text>
+              <AnimatedCounter 
+                value={onlineVehicles} 
+                style={{ color: 'white', fontWeight: 'bold' }}
+              />
             </div>
             <div style={{
               position: 'absolute',
@@ -266,7 +284,8 @@ const DisplayOverview: React.FC = () => {
               boxShadow: '0 2px 12px rgba(0,0,0,0.05)'
             }}
           >
-            <VehicleHeatMap style={{ height: 330 }} />
+            {/* 使用新的地图组件 */}
+            <VehicleMapDisplay style={{ height: 330 }} />
           </Card>
         </Col>
         <Col span={8}>
@@ -291,7 +310,8 @@ const DisplayOverview: React.FC = () => {
               boxShadow: '0 2px 12px rgba(0,0,0,0.05)'
             }}
           >
-            <BlockchainDataFlow style={{ height: 330 }} />
+            {/* 使用新的三维区块链组件 */}
+            <BlockchainDisplay3D style={{ height: 330 }} />
           </Card>
         </Col>
       </Row>
