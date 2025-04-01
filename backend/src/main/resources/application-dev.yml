@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/evcarbonmonitor
+    username: postgres
+    password: password
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+blockchain:
+  web3-provider: http://localhost:8545
+  contract-addresses:
+    access-control: '0x...'
+    vehicle-registry: '0x...'
+    carbon-calculator: '0x...'
+    credits-generator: '0x...'
+    credits-manager: '0x...'
+    contract-manager: '0x...'
+
+security:
+  jwt:
+    secret-key: your_jwt_secret_key
+    expiration-time: 86400000
