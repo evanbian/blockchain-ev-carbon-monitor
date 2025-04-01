@@ -1,11 +1,17 @@
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/evcarbonmonitor
-    username: postgres
-    password: password
+    # username: postgres
+    # password: password
+    username: lzh
+    password: 940530
   jpa:
     hibernate:
       ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
 
 blockchain:
   web3-provider: http://localhost:8545

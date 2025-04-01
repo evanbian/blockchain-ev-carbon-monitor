@@ -141,11 +141,11 @@ docker run --name postgres -e POSTGRES_PASSWORD=password -e POSTGRES_DB=evcarbon
 # 进入后端目录
 cd backend
 
-# 创建本地配置文件
-cp src/main/resources/application-dev.yml.example src/main/resources/application-dev.yml
+# 选择本地配置文件
+application.yml中修改spring.profiles.active的值为dev，即选择应用application-dev.yml配置文件
 
 # 使用Gradle启动应用
-./gradlew bootRun --args='--spring.profiles.active=dev'
+./gradlew bootRun
 ```
 
 后端配置文件(application-dev.yml)示例:

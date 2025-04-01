@@ -5,8 +5,10 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.EntityListeners;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -14,6 +16,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "vehicles")
+@EntityListeners(AuditingEntityListener.class)
 public class Vehicle {
 
     @Id

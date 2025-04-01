@@ -43,6 +43,8 @@ target/
 *.war
 *.ear
 hs_err_pid*
+gradlew
+gradlew.bat
 
 # Truffle/Ethereum
 .openzeppelin/
