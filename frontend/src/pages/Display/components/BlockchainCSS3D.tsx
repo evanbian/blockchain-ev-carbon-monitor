@@ -37,7 +37,10 @@ const BlockchainCSS3D: React.FC<BlockchainCSS3DProps> = ({
   
   // 添加新区块
   const addNewBlock = () => {
-    const newBlockNumber = latestBlockNumber + 1;
+    // 计算新区块高度 - 修复: 确保从当前最新区块高度递增，而不是从状态变量
+    const currentLatestBlock = blocks.length > 0 ? blocks[0] : null;
+    const newBlockNumber = currentLatestBlock ? currentLatestBlock.height + 1 : latestBlockNumber + 1;
+    
     const prevHash = blocks.length > 0 ? blocks[0].hash : '0x0000000000...';
     
     const newBlock: Block = {
@@ -49,6 +52,7 @@ const BlockchainCSS3D: React.FC<BlockchainCSS3DProps> = ({
       height: newBlockNumber
     };
     
+    // 更新区块列表
     setBlocks(prevBlocks => {
       const updatedBlocks = [newBlock, ...prevBlocks];
       if (updatedBlocks.length > 8) {
@@ -57,6 +61,7 @@ const BlockchainCSS3D: React.FC<BlockchainCSS3DProps> = ({
       return updatedBlocks;
     });
     
+    // 更新最新区块高度状态
     setLatestBlockNumber(newBlockNumber);
   };
   
@@ -65,10 +70,12 @@ const BlockchainCSS3D: React.FC<BlockchainCSS3DProps> = ({
     const initialBlocks: Block[] = [];
     for (let i = 0; i < 5; i++) {
       const blockNumber = latestBlockNumber - i;
+      const prevBlock = i > 0 ? initialBlocks[i-1] : null;
+      
       initialBlocks.push({
         id: Date.now() - i * 1000,
         hash: generateHash(),
-        prevHash: i > 0 ? initialBlocks[i-1]?.hash || generateHash() : '0x0000000000...',
+        prevHash: prevBlock ? prevBlock.hash : '0x0000000000...',
         timestamp: Date.now() - i * 12000,
         transactions: Math.floor(Math.random() * 5) + 1,
         height: blockNumber
@@ -154,7 +161,7 @@ const BlockchainCSS3D: React.FC<BlockchainCSS3DProps> = ({
         padding: '4px 12px',
         borderRadius: '6px'
       }}>
-        当前区块高度: {latestBlockNumber}
+        当前区块高度: {blocks.length > 0 ? blocks[0].height : latestBlockNumber}
       </div>
       
       <div 
@@ -294,5 +301,4 @@ const BlockchainCSS3D: React.FC<BlockchainCSS3DProps> = ({
   );
 };
 
-// 确保正确导出默认组件
 export default BlockchainCSS3D;

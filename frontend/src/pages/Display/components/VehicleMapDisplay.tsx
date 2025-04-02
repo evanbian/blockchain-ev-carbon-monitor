@@ -27,13 +27,6 @@ interface VehicleData {
   carbonReduction: number;
 }
 
-// 轨迹线数据结构，与车辆数据分离
-interface TrackData {
-  vehicleId: string;
-  path: [number, number][];
-  status: string;
-}
-
 const VehicleMapDisplay: React.FC<VehicleMapDisplayProps> = ({
   style,
   className
@@ -43,8 +36,6 @@ const VehicleMapDisplay: React.FC<VehicleMapDisplayProps> = ({
   const [heatmapLayer, setHeatmapLayer] = useState<any>(null);
   const [vehicleMarkers, setVehicleMarkers] = useState<any[]>([]);
   const [vehicles, setVehicles] = useState<VehicleData[]>([]);
-  const [tracks, setTracks] = useState<TrackData[]>([]); // 轨迹数据单独保存
-  const [pathLines, setPathLines] = useState<any[]>([]);
   const [mounted, setMounted] = useState(false);
   
   // 雄安新区大致坐标范围
@@ -75,15 +66,7 @@ const VehicleMapDisplay: React.FC<VehicleMapDisplayProps> = ({
       };
     });
     
-    // 初始化轨迹数据
-    const initialTracks = initialVehicles.map(vehicle => ({
-      vehicleId: vehicle.id,
-      path: [] as [number, number][],
-      status: vehicle.status
-    }));
-    
     setVehicles(initialVehicles);
-    setTracks(initialTracks);
   };
   
   // 获取模拟车辆数据点
@@ -105,7 +88,7 @@ const VehicleMapDisplay: React.FC<VehicleMapDisplayProps> = ({
   
   // 更新车辆位置
   const updateVehiclePositions = () => {
-    // 先更新车辆位置
+    // 更新车辆位置
     setVehicles(prev => {
       return prev.map(vehicle => {
         // 只更新行驶中的车辆位置
@@ -140,40 +123,6 @@ const VehicleMapDisplay: React.FC<VehicleMapDisplayProps> = ({
         };
       });
     });
-    
-    // 然后分开更新轨迹
-    setTracks(prevTracks => {
-      return prevTracks.map(track => {
-        // 找到对应车辆
-        const vehicle = vehicles.find(v => v.id === track.vehicleId);
-        if (!vehicle) return track;
-        
-        // 更新状态
-        const updatedTrack = { 
-          ...track, 
-          status: vehicle.status 
-        };
-        
-        // 只为行驶中的车辆添加轨迹点
-        if (vehicle.status === '行驶中') {
-          // 只有在轨迹为空或者与上一个点距离足够时才添加新点
-          if (track.path.length === 0 || 
-              (track.path.length > 0 && 
-               (Math.abs(vehicle.position[0] - track.path[track.path.length-1][0]) > 0.0002 || 
-                Math.abs(vehicle.position[1] - track.path[track.path.length-1][1]) > 0.0002))) {
-            
-            // 添加当前位置到路径，保持路径不超过50个点
-            let newPath = [...track.path, [...vehicle.position] as [number, number]];
-            if (newPath.length > 50) {
-              newPath = newPath.slice(newPath.length - 50);
-            }
-            updatedTrack.path = newPath;
-          }
-        }
-        
-        return updatedTrack;
-      });
-    });
   };
   
   // 随机改变车辆状态
@@ -188,19 +137,6 @@ const VehicleMapDisplay: React.FC<VehicleMapDisplayProps> = ({
         const newBatteryLevel = vehicle.status === '充电中' 
           ? Math.min(100, vehicle.batteryLevel + 10) 
           : Math.max(10, vehicle.batteryLevel - 5);
-        
-        // 如果从非行驶状态变为行驶状态，清空对应轨迹
-        if (newStatus === '行驶中' && vehicle.status !== '行驶中') {
-          const trackIndex = tracks.findIndex(t => t.vehicleId === vehicle.id);
-          if (trackIndex !== -1) {
-            const updatedTracks = [...tracks];
-            updatedTracks[trackIndex] = {
-              ...updatedTracks[trackIndex],
-              path: []
-            };
-            setTracks(updatedTracks);
-          }
-        }
         
         return {
           ...vehicle,
@@ -326,15 +262,7 @@ const VehicleMapDisplay: React.FC<VehicleMapDisplayProps> = ({
         }
       });
       
-      // 清除旧的路径线
-      pathLines.forEach(line => {
-        if (line && mapInstance) {
-          mapInstance.remove(line);
-        }
-      });
-      
       const newMarkers = [];
-      const newPathLines = [];
       
       // 添加新的车辆标记
       vehicles.forEach(vehicle => {
@@ -375,32 +303,11 @@ const VehicleMapDisplay: React.FC<VehicleMapDisplayProps> = ({
         newMarkers.push(marker);
       });
       
-      // 分开绘制轨迹线
-      tracks.forEach(track => {
-        if (track.path && track.path.length > 1) {
-          try {
-            const pathLine = new window.AMap.Polyline({
-              path: track.path,
-              strokeColor: track.status === '行驶中' ? '#52c41a' : '#aaa',
-              strokeWeight: 3,
-              strokeOpacity: 0.8,
-              showDir: true
-            });
-            
-            pathLine.setMap(mapInstance);
-            newPathLines.push(pathLine);
-          } catch (error) {
-            console.error('绘制轨迹线出错:', error);
-          }
-        }
-      });
-      
       setVehicleMarkers(newMarkers);
-      setPathLines(newPathLines);
     } catch (error) {
       console.error('更新地图数据出错:', error);
     }
-  }, [vehicles, tracks, mapInstance, heatmapLayer]);
+  }, [vehicles, mapInstance, heatmapLayer]);
 
   return (
     <div 

@@ -1,6 +1,6 @@
 // src/pages/Display/Overview/index.tsx
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Typography, Space } from 'antd';
+import { Card, Row, Col, Typography, Space, Statistic } from 'antd';
 import { ArrowUpOutlined, ThunderboltOutlined, EnvironmentOutlined } from '@ant-design/icons';
 // 导入新组件
 import VehicleMapDisplay from '../components/VehicleMapDisplay';
@@ -52,45 +52,53 @@ const DisplayOverview: React.FC = () => {
             bordered={false} 
             className="stat-card"
             style={{ 
-              height: 200, 
+              height: 240, 
               background: 'linear-gradient(120deg, #1890ff, #52c41a)',
               color: 'white',
-              borderRadius: '10px',
+              borderRadius: '12px',
               overflow: 'hidden',
-              position: 'relative'
+              position: 'relative',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
             }}
           >
             <CarbonCreditsParticles style={{ position: 'absolute', width: '100%', height: '100%', top: 0, left: 0 }} />
-            <Title level={4} style={{ color: 'white', margin: 0, position: 'relative', zIndex: 2 }}>总碳积分</Title>
+            <Title level={3} style={{ color: 'white', margin: '0 0 6px 0', position: 'relative', zIndex: 2, fontSize: '24px' }}>总碳积分</Title>
             <div style={{ 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center', 
-              marginTop: 30,
+              marginTop: 24,
               position: 'relative',
-              zIndex: 2
+              zIndex: 2,
+              height: '60px'
             }}>
               <ArrowUpOutlined style={{ 
                 color: 'white', 
-                marginRight: 8, 
-                fontSize: 24, 
+                marginRight: 16, 
+                fontSize: 28, 
                 background: 'rgba(255,255,255,0.2)',
-                padding: 8,
+                padding: 12,
                 borderRadius: '50%'
               }} />
-              <AnimatedCounter 
-                value={totalCredits} 
-                style={{ fontSize: 48, fontWeight: 'bold', color: 'white' }}
-              />
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <AnimatedCounter 
+                  value={totalCredits} 
+                  style={{ fontSize: 52, fontWeight: 'bold', color: 'white', lineHeight: '1.2' }}
+                />
+              </div>
             </div>
             <div style={{ 
-              marginTop: 16, 
+              marginTop: 24, 
               textAlign: 'center',
               position: 'relative',
-              zIndex: 2
+              zIndex: 2,
+              fontSize: '16px',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center'
             }}>
-              <Text style={{ color: 'rgba(255,255,255,0.8)' }}>今日新增: </Text>
-              <Text style={{ color: 'white', fontWeight: 'bold' }}>{issuedToday.toFixed(1)}</Text>
+              <Text style={{ color: 'rgba(255,255,255,0.8)' }}>今日新增:&nbsp;</Text>
+              <Text style={{ color: 'white', fontWeight: 'bold', fontSize: '18px', lineHeight: '1' }}>{issuedToday.toFixed(1)}</Text>
             </div>
             <div style={{
               position: 'absolute',
@@ -115,56 +123,62 @@ const DisplayOverview: React.FC = () => {
           </Card>
         </Col>
         
-        {/* 其他统计卡片... */}
-        
         <Col span={8}>
           <Card 
             bordered={false} 
             className="stat-card"
             style={{ 
-              height: 200, 
+              height: 240, 
               background: 'linear-gradient(120deg, #722ed1, #eb2f96)',
               color: 'white',
-              borderRadius: '10px',
+              borderRadius: '12px',
               overflow: 'hidden',
-              position: 'relative'
+              position: 'relative',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
             }}
           >
-            <Title level={4} style={{ color: 'white', margin: 0 }}>碳减排总量</Title>
+            <Title level={3} style={{ color: 'white', margin: '0 0 6px 0', fontSize: '24px' }}>碳减排总量</Title>
             <div style={{ 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center', 
-              marginTop: 30,
+              marginTop: 24,
               position: 'relative',
-              zIndex: 2
+              zIndex: 2,
+              height: '60px'
             }}>
               <ThunderboltOutlined style={{ 
                 color: 'white', 
-                marginRight: 8, 
-                fontSize: 24, 
+                marginRight: 16, 
+                fontSize: 28, 
                 background: 'rgba(255,255,255,0.2)',
-                padding: 8,
+                padding: 12,
                 borderRadius: '50%'
               }} />
-              <AnimatedCounter 
-                value={totalReduction} 
-                style={{ fontSize: 48, fontWeight: 'bold', color: 'white' }}
-                suffix={<span style={{ fontSize: 20, marginLeft: 8, color: 'white' }}>kg</span>}
-              />
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <AnimatedCounter 
+                  value={totalReduction} 
+                  style={{ fontSize: 52, fontWeight: 'bold', color: 'white', lineHeight: '1.2' }}
+                />
+                <span style={{ fontSize: 24, marginLeft: 8, color: 'white' }}>kg</span>
+              </div>
             </div>
             <div style={{ 
-              marginTop: 16, 
+              marginTop: 24, 
               textAlign: 'center',
               position: 'relative',
-              zIndex: 2
+              zIndex: 2,
+              fontSize: '16px',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center'
             }}>
-              <Text style={{ color: 'rgba(255,255,255,0.8)' }}>相当于种植 </Text>
+              <Text style={{ color: 'rgba(255,255,255,0.8)' }}>相当于种植&nbsp;</Text>
               <AnimatedCounter 
                 value={treesEquivalent} 
-                style={{ color: 'white', fontWeight: 'bold' }}
+                style={{ color: 'white', fontWeight: 'bold', fontSize: '18px', lineHeight: '1' }}
               />
-              <Text style={{ color: 'rgba(255,255,255,0.8)' }}> 棵树</Text>
+              <Text style={{ color: 'rgba(255,255,255,0.8)', marginLeft: '4px' }}>棵树</Text>
             </div>
             <div style={{
               position: 'absolute',
@@ -194,48 +208,57 @@ const DisplayOverview: React.FC = () => {
             bordered={false} 
             className="stat-card"
             style={{ 
-              height: 200, 
+              height: 240, 
               background: 'linear-gradient(120deg, #fa8c16, #faad14)',
               color: 'white',
-              borderRadius: '10px',
+              borderRadius: '12px',
               overflow: 'hidden',
-              position: 'relative'
+              position: 'relative',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
             }}
           >
-            <Title level={4} style={{ color: 'white', margin: 0 }}>接入车辆数</Title>
+            <Title level={3} style={{ color: 'white', margin: '0 0 6px 0', fontSize: '24px' }}>接入车辆数</Title>
             <div style={{ 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center', 
-              marginTop: 30,
+              marginTop: 24,
               position: 'relative',
-              zIndex: 2
+              zIndex: 2,
+              height: '60px'
             }}>
               <EnvironmentOutlined style={{ 
                 color: 'white', 
-                marginRight: 8, 
-                fontSize: 24, 
+                marginRight: 16, 
+                fontSize: 28, 
                 background: 'rgba(255,255,255,0.2)',
-                padding: 8,
+                padding: 12,
                 borderRadius: '50%'
               }} />
-              <AnimatedCounter 
-                value={vehicleCount} 
-                style={{ fontSize: 48, fontWeight: 'bold', color: 'white' }}
-                suffix={<span style={{ fontSize: 20, marginLeft: 8, color: 'white' }}>辆</span>}
-              />
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <AnimatedCounter 
+                  value={vehicleCount} 
+                  style={{ fontSize: 52, fontWeight: 'bold', color: 'white', lineHeight: '1.2' }}
+                />
+                <span style={{ fontSize: 24, marginLeft: 8, color: 'white' }}>辆</span>
+              </div>
             </div>
             <div style={{ 
-              marginTop: 16, 
+              marginTop: 24, 
               textAlign: 'center',
               position: 'relative',
-              zIndex: 2
+              zIndex: 2,
+              fontSize: '16px',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center'
             }}>
-              <Text style={{ color: 'rgba(255,255,255,0.8)' }}>在线车辆: </Text>
+              <Text style={{ color: 'rgba(255,255,255,0.8)' }}>在线车辆:&nbsp;</Text>
               <AnimatedCounter 
                 value={onlineVehicles} 
-                style={{ color: 'white', fontWeight: 'bold' }}
+                style={{ color: 'white', fontWeight: 'bold', fontSize: '18px', lineHeight: '1' }}
               />
+              <Text style={{ color: 'rgba(255,255,255,0.8)', marginLeft: '4px' }}>辆</Text>
             </div>
             <div style={{
               position: 'absolute',
@@ -274,18 +297,20 @@ const DisplayOverview: React.FC = () => {
                   marginRight: 8,
                   borderRadius: 2
                 }}></span>
-                <span>雄安新区车辆分布热图</span>
+                <span style={{ fontSize: '16px', fontWeight: 'bold' }}>雄安新区车辆分布热图</span>
               </div>
             }
             bordered={false}
             style={{ 
               height: 400, 
-              borderRadius: '10px',
+              borderRadius: '12px',
               boxShadow: '0 2px 12px rgba(0,0,0,0.05)'
             }}
+            headStyle={{ padding: '12px 16px' }}
+            bodyStyle={{ padding: '12px 16px', height: 'calc(100% - 57px)' }}
           >
             {/* 使用新的地图组件 */}
-            <VehicleMapDisplay style={{ height: 330 }} />
+            <VehicleMapDisplay style={{ height: '100%' }} />
           </Card>
         </Col>
         <Col span={8}>
@@ -300,18 +325,20 @@ const DisplayOverview: React.FC = () => {
                   marginRight: 8,
                   borderRadius: 2
                 }}></span>
-                <span>区块链数据流</span>
+                <span style={{ fontSize: '16px', fontWeight: 'bold' }}>区块链数据流</span>
               </div>
             }
             bordered={false}
             style={{ 
               height: 400, 
-              borderRadius: '10px',
+              borderRadius: '12px',
               boxShadow: '0 2px 12px rgba(0,0,0,0.05)'
             }}
+            headStyle={{ padding: '12px 16px' }}
+            bodyStyle={{ padding: '12px 16px', height: 'calc(100% - 57px)' }}
           >
             {/* 使用CSS3D版本的区块链组件代替Three.js版本 */}
-            <BlockchainCSS3D style={{ height: 330 }} />
+            <BlockchainCSS3D style={{ height: '100%' }} />
           </Card>
         </Col>
       </Row>
@@ -329,14 +356,16 @@ const DisplayOverview: React.FC = () => {
                   marginRight: 8,
                   borderRadius: 2
                 }}></span>
-                <span>车辆实时数据</span>
+                <span style={{ fontSize: '16px', fontWeight: 'bold' }}>车辆实时数据</span>
               </div>
             }
             bordered={false}
             style={{ 
-              borderRadius: '10px',
+              borderRadius: '12px',
               boxShadow: '0 2px 12px rgba(0,0,0,0.05)'
             }}
+            headStyle={{ padding: '12px 16px' }}
+            bodyStyle={{ padding: '0', maxHeight: '350px', overflow: 'auto' }}
           >
             <VehicleDataScroll />
           </Card>
