@@ -3,12 +3,12 @@ import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Typography, Space } from 'antd';
 import { ArrowUpOutlined, ThunderboltOutlined, EnvironmentOutlined } from '@ant-design/icons';
 // 导入新组件
-import BlockchainDisplay3D from '../components/BlockchainDisplay3D';
 import VehicleMapDisplay from '../components/VehicleMapDisplay';
 import VehicleDataScroll from '../components/VehicleDataScroll';
 import AnimatedCounter from '../components/AnimatedCounter';
 import CarbonCreditsParticles from '../components/CarbonCreditsParticles';
-// import BlockchainECharts from '../components/BlockchainECharts';
+// 使用CSS3D版本替换Three.js版本，因为Three.js版本可能有兼容性问题
+import BlockchainCSS3D from '../components/BlockchainCSS3D';
 
 const { Title, Text } = Typography;
 
@@ -310,8 +310,8 @@ const DisplayOverview: React.FC = () => {
               boxShadow: '0 2px 12px rgba(0,0,0,0.05)'
             }}
           >
-            {/* 使用新的三维区块链组件 */}
-            <BlockchainDisplay3D style={{ height: 330 }} />
+            {/* 使用CSS3D版本的区块链组件代替Three.js版本 */}
+            <BlockchainCSS3D style={{ height: 330 }} />
           </Card>
         </Col>
       </Row>
