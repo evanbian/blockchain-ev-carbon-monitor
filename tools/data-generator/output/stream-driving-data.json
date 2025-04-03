@@ -1,0 +1,226 @@
+[
+  {
+    "id": "cb017805-d45d-4020-bf86-3d7a3f7f1f57",
+    "vin": "WAUG0X2Z4L2780615",
+    "timestamp": "2025-04-03T08:24:53.958Z",
+    "mileage": 39.8,
+    "energyConsumption": 6.16,
+    "speed": 68,
+    "batteryLevel": 32,
+    "position": [
+      113.88738592339749,
+      22.527817097376747
+    ],
+    "isAbnormal": false
+  },
+  {
+    "id": "cb017805-d45d-4020-bf86-3d7a3f7f1f57",
+    "vin": "LBVZ5V8MVL6226881",
+    "timestamp": "2025-04-03T08:26:02.958Z",
+    "mileage": 17.4,
+    "energyConsumption": 2.23,
+    "speed": 68,
+    "batteryLevel": 32,
+    "position": [
+      113.88738592339749,
+      22.527817097376747
+    ],
+    "isAbnormal": false
+  },
+  {
+    "id": "cb017805-d45d-4020-bf86-3d7a3f7f1f57",
+    "vin": "LJDVYTWM7K0128562",
+    "timestamp": "2025-04-03T08:26:02.958Z",
+    "mileage": 39.8,
+    "energyConsumption": 6.24,
+    "speed": 68,
+    "batteryLevel": 32,
+    "position": [
+      113.88738592339749,
+      22.527817097376747
+    ],
+    "isAbnormal": false
+  },
+  {
+    "id": "cb017805-d45d-4020-bf86-3d7a3f7f1f57",
+    "vin": "LBVT8VJY0L2877877",
+    "timestamp": "2025-04-03T08:26:02.958Z",
+    "mileage": 39.8,
+    "energyConsumption": 5.66,
+    "speed": 68,
+    "batteryLevel": 32,
+    "position": [
+      113.88738592339749,
+      22.527817097376747
+    ],
+    "isAbnormal": false
+  },
+  {
+    "id": "cb017805-d45d-4020-bf86-3d7a3f7f1f57",
+    "vin": "LJDWXS2LEL7423833",
+    "timestamp": "2025-04-03T08:26:02.958Z",
+    "mileage": 39.8,
+    "energyConsumption": 7.39,
+    "speed": 68,
+    "batteryLevel": 32,
+    "position": [
+      113.88738592339749,
+      22.527817097376747
+    ],
+    "isAbnormal": false
+  },
+  {
+    "id": "cb017805-d45d-4020-bf86-3d7a3f7f1f57",
+    "vin": "LFVE4N9ADK5223650",
+    "timestamp": "2025-04-03T08:26:02.958Z",
+    "mileage": 39.8,
+    "energyConsumption": 7.39,
+    "speed": 68,
+    "batteryLevel": 32,
+    "position": [
+      113.88738592339749,
+      22.527817097376747
+    ],
+    "isAbnormal": false
+  },
+  {
+    "id": "cb017805-d45d-4020-bf86-3d7a3f7f1f57",
+    "vin": "WAU2WVY41L7218432",
+    "timestamp": "2025-04-03T08:26:02.958Z",
+    "mileage": 72.6,
+    "energyConsumption": 10.21,
+    "speed": 29,
+    "batteryLevel": 69,
+    "position": [
+      114.15464648260188,
+      22.51176370040126
+    ],
+    "isAbnormal": false
+  },
+  {
+    "id": "cb017805-d45d-4020-bf86-3d7a3f7f1f57",
+    "vin": "LSV87G7NVK8212946",
+    "timestamp": "2025-04-03T08:29:01.958Z",
+    "mileage": 72.6,
+    "energyConsumption": 9.41,
+    "speed": 29,
+    "batteryLevel": 69,
+    "position": [
+      114.15464648260188,
+      22.51176370040126
+    ],
+    "isAbnormal": false
+  },
+  {
+    "id": "cb017805-d45d-4020-bf86-3d7a3f7f1f57",
+    "vin": "LJDWXS2LEL7423833",
+    "timestamp": "2025-04-03T08:25:53.976Z",
+    "mileage": 39.8,
+    "energyConsumption": 7.39,
+    "speed": 68,
+    "batteryLevel": 32,
+    "position": [
+      113.88738592339749,
+      22.527817097376747
+    ],
+    "isAbnormal": false
+  },
+  {
+    "id": "cb017805-d45d-4020-bf86-3d7a3f7f1f57",
+    "vin": "LFVE4N9ADK5223650",
+    "timestamp": "2025-04-03T08:25:53.976Z",
+    "mileage": 39.8,
+    "energyConsumption": 7.39,
+    "speed": 68,
+    "batteryLevel": 32,
+    "position": [
+      113.88738592339749,
+      22.527817097376747
+    ],
+    "isAbnormal": false
+  },
+  {
+    "id": "cb017805-d45d-4020-bf86-3d7a3f7f1f57",
+    "vin": "LSVD9C3G9L5571983",
+    "timestamp": "2025-04-03T08:27:02.976Z",
+    "mileage": 39.8,
+    "energyConsumption": 6.77,
+    "speed": 68,
+    "batteryLevel": 32,
+    "position": [
+      113.88738592339749,
+      22.527817097376747
+    ],
+    "isAbnormal": false
+  },
+  {
+    "id": "cb017805-d45d-4020-bf86-3d7a3f7f1f57",
+    "vin": "LSV87G7NVK8212946",
+    "timestamp": "2025-04-03T08:27:02.976Z",
+    "mileage": 72.6,
+    "energyConsumption": 9.41,
+    "speed": 29,
+    "batteryLevel": 69,
+    "position": [
+      114.15464648260188,
+      22.51176370040126
+    ],
+    "isAbnormal": false
+  },
+  {
+    "id": "cb017805-d45d-4020-bf86-3d7a3f7f1f57",
+    "vin": "LSV87AZE1K5332858",
+    "timestamp": "2025-04-03T08:27:02.976Z",
+    "mileage": 17.4,
+    "energyConsumption": 2.66,
+    "speed": 68,
+    "batteryLevel": 32,
+    "position": [
+      113.88738592339749,
+      22.527817097376747
+    ],
+    "isAbnormal": false
+  },
+  {
+    "id": "cb017805-d45d-4020-bf86-3d7a3f7f1f57",
+    "vin": "WAUG0X2Z4L2780615",
+    "timestamp": "2025-04-03T08:27:02.976Z",
+    "mileage": 39.8,
+    "energyConsumption": 6.16,
+    "speed": 68,
+    "batteryLevel": 32,
+    "position": [
+      113.88738592339749,
+      22.527817097376747
+    ],
+    "isAbnormal": false
+  },
+  {
+    "id": "cb017805-d45d-4020-bf86-3d7a3f7f1f57",
+    "vin": "LJDVYTWM7K0128562",
+    "timestamp": "2025-04-03T08:27:02.976Z",
+    "mileage": 39.8,
+    "energyConsumption": 6.24,
+    "speed": 68,
+    "batteryLevel": 32,
+    "position": [
+      113.88738592339749,
+      22.527817097376747
+    ],
+    "isAbnormal": false
+  },
+  {
+    "id": "cb017805-d45d-4020-bf86-3d7a3f7f1f57",
+    "vin": "WAU2WVY41L7218432",
+    "timestamp": "2025-04-03T08:33:51.976Z",
+    "mileage": 72.6,
+    "energyConsumption": 10.21,
+    "speed": 29,
+    "batteryLevel": 69,
+    "position": [
+      114.15464648260188,
+      22.51176370040126
+    ],
+    "isAbnormal": false
+  }
+]
