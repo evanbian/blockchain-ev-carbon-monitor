@@ -10,14 +10,25 @@
 
 所有API响应采用统一的JSON格式：
 
+**成功响应:**
 ```json
 {
-  "success": true,  // 操作是否成功
-  "code": 200,      // 状态码
+  "success": true,
+  "code": 200,      // 状态码 (通常为 2xx)
   "message": "操作成功", // 提示信息
-  "data": {         // 响应数据
+  "data": {         // 响应数据 (可能为对象、数组或 null)
     // 具体数据内容
   }
+}
+```
+
+**失败响应:**
+```json
+{
+  "success": false,
+  "code": 404,      // 状态码 (通常为 4xx 或 5xx)
+  "message": "资源未找到", // 错误信息
+  "data": null
 }
 ```
 
@@ -55,8 +66,7 @@
           "totalMileage": 12500,
           "totalCarbonReduction": 3750.5,
           "carbonCredits": 187.5
-        },
-        // 更多车辆...
+        }
       ]
     }
   }
@@ -173,10 +183,11 @@
 
 - **URL**: `/api/v1/analytics/carbon-reduction/summary`
 - **Method**: `GET`
-- **描述**: 获取碳减排总量统计数据
+- **描述**: 获取指定时间范围内所有车辆（或指定车辆）的碳减排总量统计数据。
 - **请求参数**:
-  - `startDate`: 开始日期(YYYY-MM-DD)
-  - `endDate`: 结束日期(YYYY-MM-DD)
+  - `startDate` (必填): 开始日期, 格式 `YYYY-MM-DD`
+  - `endDate` (必填): 结束日期, 格式 `YYYY-MM-DD`
+  - `vehicleId` (可选): 车辆ID，如果提供，则只统计该车辆的数据。
 - **响应示例**:
   ```json
   {
@@ -184,11 +195,11 @@
     "code": 200,
     "message": "获取成功",
     "data": {
-      "totalReduction": 45682.5,
-      "comparedToFuel": 68523.75,
-      "economicValue": 91365.0,
-      "equivalentTrees": 2284,
-      "vehicleCount": 20
+      "totalReduction": 45682.50,      // 总碳减排量 (kgCO2e)
+      "comparedToFuel": 19861.96,      // 相当于减少燃油消耗 (L)
+      "economicValue": 22841.25,       // 经济价值 (元, 基于配置的价格计算)
+      "equivalentTrees": 114,          // 相当于种植树木 (棵, 基于时间范围年化估算)
+      "vehicleCount": 20             // 统计范围内的车辆总数
     }
   }
   ```
@@ -197,11 +208,12 @@
 
 - **URL**: `/api/v1/analytics/carbon-reduction/trends`
 - **Method**: `GET`
-- **描述**: 获取碳减排趋势数据
+- **描述**: 获取指定时间范围内按时间单位分组的碳减排和碳积分趋势数据。
 - **请求参数**:
-  - `startDate`: 开始日期(YYYY-MM-DD)
-  - `endDate`: 结束日期(YYYY-MM-DD)
-  - `groupBy`: 分组方式(day/week/month)
+  - `startDate` (必填): 开始日期, 格式 `YYYY-MM-DD`
+  - `endDate` (必填): 结束日期, 格式 `YYYY-MM-DD`
+  - `groupBy` (必填): 分组方式 (`day`, `week`, `month`), 默认 `day`。
+  - `vehicleId` (可选): 车辆ID。
 - **响应示例**:
   ```json
   {
@@ -209,18 +221,18 @@
     "code": 200,
     "message": "获取成功",
     "data": {
-      "timeline": [
+      "timeline": [ // 注意: 数据在 timeline 数组中
         {
-          "date": "2023-06-01",
-          "reduction": 1523.5,
-          "credits": 76.17
+          "date": "2023-06-01", // 日期 (YYYY-MM-DD)
+          "reduction": 1523.50,  // 该时间单位内的碳减排量 (kgCO2e)
+          "credits": 76.18     // 该时间单位内产生的碳积分
         },
         {
           "date": "2023-06-02",
-          "reduction": 1487.2,
+          "reduction": 1487.20,
           "credits": 74.36
-        },
-        // 更多数据...
+        }
+        // ... 更多数据
       ]
     }
   }
@@ -230,10 +242,11 @@
 
 - **URL**: `/api/v1/analytics/carbon-reduction/by-model`
 - **Method**: `GET`
-- **描述**: 获取不同车型的碳减排对比数据
+- **描述**: 获取指定时间范围内按车型分组的碳减排对比数据。
 - **请求参数**:
-  - `startDate`: 开始日期(YYYY-MM-DD)
-  - `endDate`: 结束日期(YYYY-MM-DD)
+  - `startDate` (必填): 开始日期, 格式 `YYYY-MM-DD`
+  - `endDate` (必填): 结束日期, 格式 `YYYY-MM-DD`
+  - `vehicleId` (可选): 车辆ID。
 - **响应示例**:
   ```json
   {
@@ -241,20 +254,20 @@
     "code": 200,
     "message": "获取成功",
     "data": {
-      "models": [
+      "models": [ // 注意: 数据在 models 数组中
         {
-          "model": "比亚迪汉EV",
-          "reduction": 15682.5,
-          "percentage": 34.3,
-          "vehicleCount": 7
+          "model": "比亚迪汉EV",    // 车型名称
+          "reduction": 15682.50, // 该车型总碳减排量 (kgCO2e)
+          "percentage": 34.3,    // 该车型减排量占总减排量的百分比 (%)
+          "vehicleCount": 7        // 该车型参与统计的车辆数
         },
         {
           "model": "特斯拉Model 3",
-          "reduction": 12853.6,
-          "percentage": 28.1,
+          "reduction": 12345.60,
+          "percentage": 27.0,
           "vehicleCount": 5
-        },
-        // 更多车型...
+        }
+        // ... 更多车型
       ]
     }
   }
@@ -262,14 +275,15 @@
 
 #### 2.4 获取车辆行驶数据
 
-- **URL**: `/api/v1/analytics/driving-data`
+- **URL**: `/api/v1/analytics/driving/:vin`
 - **Method**: `GET`
-- **描述**: 获取车辆行驶数据分析
+- **描述**: 获取指定车辆在指定时间范围内的详细行驶统计数据。
+- **URL参数**:
+  - `vin` (必填): 车辆VIN码
 - **请求参数**:
-  - `vin`: 车辆VIN码(可选，不提供则查询所有车辆)
-  - `startDate`: 开始日期(YYYY-MM-DD)
-  - `endDate`: 结束日期(YYYY-MM-DD)
-  - `metrics`: 指标列表(逗号分隔，如mileage,energy,speed)
+  - `startDate` (必填): 开始日期时间, 格式 `YYYY-MM-DDTHH:mm:ss`
+  - `endDate` (必填): 结束日期时间, 格式 `YYYY-MM-DDTHH:mm:ss`
+  - `metrics` (必填): 需要获取的指标列表 (如 `mileage`, `energy`, `carbonReduction`, `efficiency`), 多个指标用逗号分隔或作为数组传递。
 - **响应示例**:
   ```json
   {
@@ -277,54 +291,73 @@
     "code": 200,
     "message": "获取成功",
     "data": {
-      "summary": {
-        "totalMileage": 12500,
-        "totalEnergy": 2300,
-        "avgSpeed": 45.3
-      },
-      "timeline": [
-        {
-          "date": "2023-06-01",
-          "mileage": 120.5,
-          "energy": 22.8,
-          "avgSpeed": 43.2
-        },
-        // 更多数据...
-      ]
+      "totalMileage": 1250.50,     // 总行驶里程 (km)
+      "totalEnergy": 230.75,      // 总能耗 (kWh)
+      "totalReduction": 375.15,     // 总碳减排量 (kgCO2e)
+      "efficiency": 18.45         // 平均能效 (kWh/100km)
     }
   }
   ```
 
-#### 2.5 获取预测数据
+#### 2.5 获取预测数据 (新增)
 
-- **URL**: `/api/v1/analytics/predictions`
+- **URL**: `/api/v1/analytics/predictions/:vin`
 - **Method**: `GET`
-- **描述**: 获取碳减排预测数据
+- **描述**: 获取指定车辆未来一段时间的碳减排和碳积分预测数据。
+- **URL参数**:
+  - `vin` (必填): 车辆VIN码
 - **请求参数**:
-  - `vin`: 车辆VIN码(可选)
-  - `period`: 预测周期(weeks/months)
-  - `count`: 预测数量
+  - `period` (可选): 预测周期 (`day`, `week`, `month`), 默认 `day`。
+  - `count` (可选): 预测数量 (多少个周期), 默认 `7`。
 - **响应示例**:
   ```json
   {
     "success": true,
     "code": 200,
     "message": "获取成功",
-    "data": {
-      "predictions": [
-        {
-          "date": "2023-07-01",
-          "predictedReduction": 1620.8,
-          "confidence": 0.92
-        },
-        {
-          "date": "2023-08-01",
-          "predictedReduction": 1685.3,
-          "confidence": 0.85
-        },
-        // 更多预测...
-      ]
-    }
+    "data": [
+      {
+        "date": "2024-04-03", // 预测日期 (YYYY-MM-DD)
+        "carbonReduction": 12.50,  // 预测碳减排量 (kgCO2e)
+        "credits": 0.63     // 预测碳积分
+      },
+      {
+        "date": "2024-04-04",
+        "carbonReduction": 12.80,
+        "credits": 0.64
+      }
+      // ... count 个预测数据点
+    ]
+  }
+  ```
+
+#### 2.6 获取热力图数据 (新增)
+
+- **URL**: `/api/v1/analytics/heatmap`
+- **Method**: `GET`
+- **描述**: 获取用于生成地理空间热力图的数据点。
+- **请求参数**:
+  - `date` (必填): 需要查询的日期时间, 格式 `YYYY-MM-DDTHH:mm:ss` (通常传递某天的开始时间，后端会查询整天数据)。
+  - `resolution` (可选): 分辨率参数 (当前后端实现未使用，保留供未来扩展)。
+- **响应示例**:
+  ```json
+  {
+    "success": true,
+    "code": 200,
+    "message": "获取成功",
+    "data": [
+      {
+        "lat": 39.9042,  // 纬度
+        "lng": 116.4074, // 经度
+        "count": 25.5   // 权重值 (例如: 该位置的碳减排量)
+      },
+      {
+        "lat": 31.2304,
+        "lng": 121.4737,
+        "count": 15.8
+      }
+      // ... 更多数据点
+    ]
   }
   ```
 

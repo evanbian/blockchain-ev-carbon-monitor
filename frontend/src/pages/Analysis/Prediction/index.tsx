@@ -4,16 +4,19 @@ import { Card, Row, Col, Select, Button, DatePicker, Statistic, Tabs, message } 
 import { ArrowUpOutlined } from '@ant-design/icons';
 import PredictionTrendChart from './components/PredictionTrendChart';
 import SimulationChart from './components/SimulationChart';
+import dayjs from 'dayjs';
 
 const { Option } = Select;
 const { TabPane } = Tabs;
 const { RangePicker } = DatePicker;
 
 const PredictionAnalysis: React.FC = () => {
+  // 使用系统设置的全局固定日期
   const [loading, setLoading] = useState(false);
   const [predictionType, setPredictionType] = useState('carbon');
   const [predictionPeriod, setPredictionPeriod] = useState('month');
   const [predictionsGenerated, setPredictionsGenerated] = useState(false);
+  const [dateRange, setDateRange] = useState<[any | null, any | null]>([null, null]);
   
   // 处理生成预测按钮点击
   const handleGeneratePrediction = () => {
@@ -33,7 +36,7 @@ const PredictionAnalysis: React.FC = () => {
     <div className="prediction-analysis">
       <Card title="预测分析" className="filter-card" style={{ marginBottom: 16 }}>
         <Row gutter={16} align="middle">
-          <Col span={8}>
+          <Col span={6}>
             <Select 
               placeholder="选择预测类型" 
               style={{ width: '100%' }} 
@@ -45,7 +48,7 @@ const PredictionAnalysis: React.FC = () => {
               <Option value="mileage">行驶里程预测</Option>
             </Select>
           </Col>
-          <Col span={8}>
+          <Col span={6}>
             <Select 
               placeholder="预测周期" 
               style={{ width: '100%' }} 
@@ -58,7 +61,20 @@ const PredictionAnalysis: React.FC = () => {
               <Option value="year">年</Option>
             </Select>
           </Col>
-          <Col span={8}>
+          <Col span={6}>
+            <div style={{ position: 'relative' }}>
+              <RangePicker 
+                style={{ width: '100%' }}
+                onChange={(dates) => setDateRange(dates)}
+                format="YYYY-MM-DD"
+                allowClear={true}
+                placeholder={['开始日期', '结束日期']}
+                disabledDate={(current) => current && current > dayjs().endOf('day')}
+                popupStyle={{ zIndex: 1001 }}
+              />
+            </div>
+          </Col>
+          <Col span={6}>
             <Button 
               type="primary" 
               onClick={handleGeneratePrediction}

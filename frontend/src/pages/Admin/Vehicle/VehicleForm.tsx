@@ -1,10 +1,11 @@
 // src/pages/Admin/Vehicle/VehicleForm.tsx
 import React, { useState, useEffect } from 'react';
-import { Form, Input, Button, InputNumber, Card, Row, Col, message, Select } from 'antd';
+import { Form, Input, Button, InputNumber, Card, Row, Col, message, Select, DatePicker } from 'antd';
 import { ArrowLeftOutlined, SaveOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import vehicleAPI from '@/services/vehicles';
 import { Vehicle } from '@/types/vehicle';
+import dayjs from 'dayjs';
 
 const { Option } = Select;
 
@@ -13,6 +14,7 @@ interface VehicleFormProps {
 }
 
 const VehicleForm: React.FC<VehicleFormProps> = ({ mode }) => {
+  // 使用系统设置的全局固定日期
   const navigate = useNavigate();
   const { vin } = useParams<{ vin: string }>();
   const [form] = Form.useForm();
@@ -236,8 +238,18 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ mode }) => {
               name="registerDate"
               label="注册日期"
               rules={[{ required: true, message: '请输入注册日期' }]}
+              getValueFromEvent={(date) => date ? date.format('YYYY-MM-DD') : null}
+              getValueProps={(value) => ({ value: value ? dayjs(value) : undefined })}
             >
-              <Input type="date" />
+              <div>
+                <DatePicker 
+                  style={{ width: '100%' }}
+                  format="YYYY-MM-DD"
+                  placeholder="请选择注册日期"
+                  disabledDate={(current) => current && current > dayjs().endOf('day')}
+                  popupStyle={{ zIndex: 1001 }}
+                />
+              </div>
             </Form.Item>
           </Col>
         </Row>

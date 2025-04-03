@@ -1,58 +1,35 @@
 // src/pages/Analysis/Carbon/components/CarbonTrendChart.tsx
 import React, { useEffect, useRef } from 'react';
 import * as echarts from 'echarts';
+import { CarbonTrend } from '@/services/analytics';
+import { Alert } from 'antd';
 
 interface CarbonTrendChartProps {
   chartType: string;
   groupBy: string;
+  data: CarbonTrend[];
 }
 
-const CarbonTrendChart: React.FC<CarbonTrendChartProps> = ({ chartType, groupBy }) => {
+const CarbonTrendChart: React.FC<CarbonTrendChartProps> = ({ chartType, groupBy, data }) => {
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<echarts.ECharts | null>(null);
   
-  // 模拟数据
-  const generateMockData = () => {
-    let dates: string[] = [];
-    let carbonData: number[] = [];
-    let creditsData: number[] = [];
+  useEffect(() => {
+    if (!chartRef.current) return () => {};
     
-    const now = new Date();
-    const daysCount = groupBy === 'day' ? 30 : groupBy === 'week' ? 12 : 6;
-    
-    for (let i = 0; i < daysCount; i++) {
-      const date = new Date(now);
-      
-      if (groupBy === 'day') {
-        date.setDate(now.getDate() - (daysCount - i - 1));
-        dates.push(`${date.getMonth() + 1}月${date.getDate()}日`);
-      } else if (groupBy === 'week') {
-        date.setDate(now.getDate() - (daysCount - i - 1) * 7);
-        dates.push(`第${i+1}周`);
-      } else {
-        date.setMonth(now.getMonth() - (daysCount - i - 1));
-        dates.push(`${date.getMonth() + 1}月`);
-      }
-      
-      // 随机生成数据
-      const base = groupBy === 'day' ? 30 : groupBy === 'week' ? 210 : 900;
-      const randomFactor = 0.2; // 20%的随机波动
-      
-      const randomValue = base * (1 + (Math.random() * 2 - 1) * randomFactor);
-      carbonData.push(parseFloat(randomValue.toFixed(1)));
-      creditsData.push(parseFloat((randomValue * 0.05).toFixed(1)));
+    if (!chartInstance.current) {
+      chartInstance.current = echarts.init(chartRef.current);
     }
     
-    return { dates, carbonData, creditsData };
-  };
-  
-  useEffect(() => {
-    if (chartRef.current) {
-      if (!chartInstance.current) {
-        chartInstance.current = echarts.init(chartRef.current);
+    try {
+      if (!data || data.length === 0) {
+        throw new Error('暂无数据');
       }
       
-      const { dates, carbonData, creditsData } = generateMockData();
+      if (!Array.isArray(data)) {
+        console.error("Expected data to be an array, but got:", data);
+        return () => {};
+      }
       
       const option = {
         tooltip: {
@@ -78,7 +55,7 @@ const CarbonTrendChart: React.FC<CarbonTrendChartProps> = ({ chartType, groupBy 
         xAxis: {
           type: 'category',
           boundaryGap: chartType === 'bar',
-          data: dates
+          data: data.map(item => item.date)
         },
         yAxis: [
           {
@@ -115,7 +92,7 @@ const CarbonTrendChart: React.FC<CarbonTrendChartProps> = ({ chartType, groupBy 
             name: '碳减排量(kg)',
             type: chartType === 'line' ? 'line' : 'bar',
             yAxisIndex: 0,
-            data: carbonData,
+            data: data.map(item => item.reduction),
             smooth: true,
             lineStyle: {
               width: 3
@@ -131,7 +108,7 @@ const CarbonTrendChart: React.FC<CarbonTrendChartProps> = ({ chartType, groupBy 
             name: '碳积分',
             type: 'line',
             yAxisIndex: 1,
-            data: creditsData,
+            data: data.map(item => item.credits),
             smooth: true,
             lineStyle: {
               width: 2
@@ -144,6 +121,11 @@ const CarbonTrendChart: React.FC<CarbonTrendChartProps> = ({ chartType, groupBy 
       };
       
       chartInstance.current.setOption(option);
+    } catch (error) {
+      console.error('Error rendering chart:', error);
+      if (chartInstance.current) {
+        chartInstance.current.clear();
+      }
     }
     
     // 监听窗口大小变化，调整图表大小
@@ -157,7 +139,19 @@ const CarbonTrendChart: React.FC<CarbonTrendChartProps> = ({ chartType, groupBy 
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, [chartType, groupBy]);
+  }, [chartType, groupBy, data]);
+  
+  if (!data || data.length === 0) {
+    return (
+      <Alert
+        message="暂无数据"
+        description="所选时间范围内没有碳减排数据"
+        type="info"
+        showIcon
+        style={{ margin: '20px 0' }}
+      />
+    );
+  }
   
   return (
     <div ref={chartRef} style={{ height: '400px', width: '100%' }}></div>

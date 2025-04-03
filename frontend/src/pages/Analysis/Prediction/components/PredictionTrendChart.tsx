@@ -1,6 +1,11 @@
 // src/pages/Analysis/Prediction/components/PredictionTrendChart.tsx
 import React, { useEffect, useRef } from 'react';
 import * as echarts from 'echarts';
+import dayjs from 'dayjs';
+import weekOfYear from 'dayjs/plugin/weekOfYear';  // 添加周数插件
+
+// 注册 dayjs 插件
+dayjs.extend(weekOfYear);
 
 interface PredictionTrendChartProps {
   predictionType?: string;
@@ -57,9 +62,8 @@ const PredictionTrendChart: React.FC<PredictionTrendChartProps> = ({
         const predictedValues = [];
         const confidenceInterval = [];
         
-        const now = new Date();
-        const currentMonth = now.getMonth();
-        const currentYear = now.getFullYear();
+        const now = dayjs();
+        const baseValue = getBaseValue();
         
         // 根据预测周期调整日期格式和数据点
         const getPeriodConfig = () => {
@@ -68,114 +72,68 @@ const PredictionTrendChart: React.FC<PredictionTrendChartProps> = ({
               return { 
                 historyCount: 8, 
                 futureCount: 8, 
-                format: (year: number, period: number) => `${year}-W${period}` 
+                format: (date: dayjs.Dayjs) => `${date.format('YYYY')}-W${date.week()}`,
+                unit: 'week'
               };
             case 'month':
               return { 
                 historyCount: 6, 
                 futureCount: 6, 
-                format: (year: number, period: number) => `${year}-${period + 1}` 
+                format: (date: dayjs.Dayjs) => `${date.format('YYYY')}-${date.format('MM')}`,
+                unit: 'month'
               };
             case 'quarter':
               return { 
                 historyCount: 4, 
                 futureCount: 4, 
-                format: (year: number, period: number) => `${year}-Q${period + 1}` 
+                format: (date: dayjs.Dayjs) => `${date.format('YYYY')}-Q${Math.floor(date.month() / 3) + 1}`,
+                unit: 'quarter'
               };
             case 'year':
               return { 
                 historyCount: 3, 
                 futureCount: 5, 
-                format: (year: number, period: number) => `${year}` 
+                format: (date: dayjs.Dayjs) => `${date.format('YYYY')}`,
+                unit: 'year'
               };
             default:
               return { 
                 historyCount: 6, 
                 futureCount: 6, 
-                format: (year: number, period: number) => `${year}-${period + 1}` 
+                format: (date: dayjs.Dayjs) => `${date.format('YYYY')}-${date.format('MM')}`,
+                unit: 'month'
               };
           }
         };
         
-        const { historyCount, futureCount, format } = getPeriodConfig();
-        const baseValue = getBaseValue();
+        const { historyCount, futureCount, format, unit } = getPeriodConfig();
         
-        // 历史数据
+        // 生成历史日期和数据
         for (let i = historyCount; i >= 1; i--) {
-          let period = currentMonth - i;
-          let year = currentYear;
-          
-          if (predictionPeriod === 'week') {
-            // 简化处理，当前周减i
-            period = (new Date().getDay() + 52 - i) % 52 + 1;
-            if (period > (new Date().getDay() + 1)) {
-              year -= 1;
-            }
-          } else if (predictionPeriod === 'month') {
-            if (period < 0) {
-              period += 12;
-              year -= 1;
-            }
-          } else if (predictionPeriod === 'quarter') {
-            let currentQuarter = Math.floor(currentMonth / 3);
-            period = currentQuarter - i;
-            if (period < 0) {
-              period += 4;
-              year -= 1;
-            }
-          } else if (predictionPeriod === 'year') {
-            year = currentYear - i;
-            period = 0; // 年份预测不需要月份信息
-          }
-          
-          dates.push(format(year, period));
+          const date = now.subtract(i, unit as any);
+          dates.push(format(date));
           
           const randomFactor = 0.2; // 20%随机波动
-          const seasonalFactor = 1 + 0.2 * Math.sin((period / 12) * 2 * Math.PI); // 季节性因素
+          const seasonalFactor = 1 + 0.2 * Math.sin((date.month() / 12) * 2 * Math.PI); // 季节性因素
           
           const value = baseValue * seasonalFactor * (1 + (Math.random() * 2 - 1) * randomFactor);
           historicalValues.push(parseFloat(value.toFixed(1)));
-          predictedValues.push(null);  // 历史部分的预测值为null
-          confidenceInterval.push([null, null]);  // 历史部分的置信区间为null
+          predictedValues.push(null);
+          confidenceInterval.push([null, null]);
         }
         
-        // 预测数据
-        const growthTrend = 1.02;  // 每期2%的增长趋势
+        // 生成预测日期和数据
         const lastHistoricalValue = historicalValues[historicalValues.length - 1];
+        const growthTrend = 1.02;  // 每期2%的增长趋势
         
         for (let i = 1; i <= futureCount; i++) {
-          let period = currentMonth + i;
-          let year = currentYear;
+          const date = now.add(i, unit as any);
+          dates.push(format(date));
           
-          if (predictionPeriod === 'week') {
-            // 简化处理，当前周加i
-            period = (new Date().getDay() + i) % 52 + 1;
-            if (period < (new Date().getDay() + 1)) {
-              year += 1;
-            }
-          } else if (predictionPeriod === 'month') {
-            if (period >= 12) {
-              period -= 12;
-              year += 1;
-            }
-          } else if (predictionPeriod === 'quarter') {
-            let currentQuarter = Math.floor(currentMonth / 3);
-            period = currentQuarter + i;
-            if (period >= 4) {
-              period -= 4;
-              year += 1;
-            }
-          } else if (predictionPeriod === 'year') {
-            year = currentYear + i;
-            period = 0; // 年份预测不需要月份信息
-          }
-          
-          dates.push(format(year, period));
-          
-          const seasonalFactor = 1 + 0.2 * Math.sin(((currentMonth + i) / 12) * 2 * Math.PI);
+          const seasonalFactor = 1 + 0.2 * Math.sin((date.month() / 12) * 2 * Math.PI);
           const predictedValue = lastHistoricalValue * Math.pow(growthTrend, i) * seasonalFactor;
           
-          historicalValues.push(null);  // 预测部分的历史值为null
+          historicalValues.push(null);
           predictedValues.push(parseFloat(predictedValue.toFixed(1)));
           
           // 计算置信区间

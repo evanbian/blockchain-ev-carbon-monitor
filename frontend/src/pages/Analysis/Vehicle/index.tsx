@@ -5,12 +5,14 @@ import { InfoCircleOutlined } from '@ant-design/icons';
 import EnergyUsageChart from './components/EnergyUsageChart';
 import DrivingPatternChart from './components/DrivingPatternChart';
 import MileageChart from './components/MileageChart';
+import dayjs from 'dayjs';
 
 const { Option } = Select;
 const { TabPane } = Tabs;
 const { RangePicker } = DatePicker;
 
 const VehicleAnalysis: React.FC = () => {
+  // 使用系统设置的全局固定日期
   const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   
@@ -176,7 +178,17 @@ const VehicleAnalysis: React.FC = () => {
             </Select>
           </Col>
           <Col span={8}>
-            <RangePicker style={{ width: '100%' }} />
+            <div style={{ position: 'relative' }}>
+              <RangePicker 
+                style={{ width: '100%' }} 
+                format="YYYY-MM-DD"
+                allowClear={true}
+                showToday={true}
+                placeholder={['开始日期', '结束日期']}
+                disabledDate={(current) => current && current > dayjs().endOf('day')}
+                popupStyle={{ zIndex: 1001 }}
+              />
+            </div>
           </Col>
           <Col span={8}>
             <Button type="primary">

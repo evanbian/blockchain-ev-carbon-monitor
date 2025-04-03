@@ -1,15 +1,27 @@
 // src/pages/Analysis/Carbon/components/VehicleComparisonChart.tsx
 import React, { useEffect, useRef } from 'react';
 import * as echarts from 'echarts';
+import { CarbonModelData } from '@/services/analytics';
+import { Alert } from 'antd';
 
-const VehicleComparisonChart: React.FC = () => {
+interface VehicleComparisonChartProps {
+  data: CarbonModelData[];
+}
+
+const VehicleComparisonChart: React.FC<VehicleComparisonChartProps> = ({ data }) => {
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<echarts.ECharts | null>(null);
   
   useEffect(() => {
-    if (chartRef.current) {
-      if (!chartInstance.current) {
-        chartInstance.current = echarts.init(chartRef.current);
+    if (!chartRef.current) return;
+    
+    if (!chartInstance.current) {
+      chartInstance.current = echarts.init(chartRef.current);
+    }
+    
+    try {
+      if (!data || !Array.isArray(data) || data.length === 0) {
+        throw new Error('暂无数据');
       }
       
       const option = {
@@ -17,16 +29,10 @@ const VehicleComparisonChart: React.FC = () => {
           trigger: 'axis',
           axisPointer: {
             type: 'shadow'
-          },
-          formatter: function(params: any) {
-            const vehicleName = params[0].name;
-            const totalReduction = params[0].value;
-            const averageReduction = params[1].value;
-            return `${vehicleName}<br/>总减排量: ${totalReduction} kg<br/>单位减排量: ${averageReduction} kg/km`;
           }
         },
         legend: {
-          data: ['总减排量', '单位减排量'],
+          data: ['总减排量'],
           top: 10,
           right: 10
         },
@@ -38,68 +44,37 @@ const VehicleComparisonChart: React.FC = () => {
         },
         xAxis: {
           type: 'category',
-          data: ['比亚迪汉EV', '特斯拉Model 3', '蔚来ES6']
-        },
-        yAxis: [
-          {
-            type: 'value',
-            name: '总减排量(kg)',
-            min: 0,
-            position: 'left',
-            axisLine: {
-              show: true,
-              lineStyle: {
-                color: '#5470c6'
-              }
-            },
-            axisLabel: {
-              formatter: '{value} kg'
-            }
-          },
-          {
-            type: 'value',
-            name: '单位减排量(kg/km)',
-            min: 0,
-            position: 'right',
-            axisLine: {
-              show: true,
-              lineStyle: {
-                color: '#91cc75'
-              }
-            },
-            axisLabel: {
-              formatter: '{value}'
-            }
+          data: data.map(item => item.model),
+          axisLabel: {
+            interval: 0,
+            rotate: 30
           }
-        ],
+        },
+        yAxis: {
+          type: 'value',
+          name: '碳减排量(kg)',
+          axisLabel: {
+            formatter: '{value} kg'
+          }
+        },
         series: [
           {
             name: '总减排量',
             type: 'bar',
-            yAxisIndex: 0,
-            data: [3750.5, 2940.2, 4560.8],
+            data: data.map(item => item.reduction),
             itemStyle: {
               color: '#5470c6'
             }
           },
-          {
-            name: '单位减排量',
-            type: 'line',
-            yAxisIndex: 1,
-            data: [0.30, 0.29, 0.31],
-            symbol: 'circle',
-            symbolSize: 8,
-            itemStyle: {
-              color: '#91cc75'
-            },
-            lineStyle: {
-              width: 3
-            }
-          }
         ]
       };
       
       chartInstance.current.setOption(option);
+    } catch (error) {
+      console.error('Error rendering chart:', error);
+      if (chartInstance.current) {
+        chartInstance.current.clear();
+      }
     }
     
     // 监听窗口大小变化，调整图表大小
@@ -113,7 +88,19 @@ const VehicleComparisonChart: React.FC = () => {
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, []);
+  }, [data]);
+  
+  if (!data || !Array.isArray(data) || data.length === 0) {
+    return (
+      <Alert
+        message="暂无数据"
+        description="所选时间范围内没有车型对比数据"
+        type="info"
+        showIcon
+        style={{ margin: '20px 0' }}
+      />
+    );
+  }
   
   return (
     <div ref={chartRef} style={{ height: '300px', width: '100%' }}></div>
