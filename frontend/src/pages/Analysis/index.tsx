@@ -5,6 +5,7 @@ import AnalysisDashboard from './Dashboard';
 import CarbonAnalysis from './Carbon';
 import VehicleAnalysis from './Vehicle';
 import PredictionAnalysis from './Prediction';
+import AlertsAnalysis from './Alerts'; // 新增
 
 const AnalysisPage: React.FC = () => {
   return (
@@ -13,6 +14,7 @@ const AnalysisPage: React.FC = () => {
       <Route path="/carbon" element={<CarbonAnalysis />} />
       <Route path="/vehicle" element={<VehicleAnalysis />} />
       <Route path="/prediction" element={<PredictionAnalysis />} />
+      <Route path="/alerts" element={<AlertsAnalysis />} /> {/* 新增 */}
       <Route path="*" element={<Navigate to="/analysis" replace />} />
     </Routes>
   );

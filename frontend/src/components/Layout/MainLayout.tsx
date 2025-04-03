@@ -11,6 +11,7 @@ import {
   LineChartOutlined,
   AppstoreOutlined,
   UserOutlined,
+  BellOutlined,
 } from '@ant-design/icons';
 
 const { Header, Sider, Content } = Layout;
@@ -104,6 +105,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                     icon: <LineChartOutlined />,
                     label: <Link to="/analysis/carbon">碳减排分析</Link>
                   },
+                  {
+                    key: "/analysis/alerts",
+                    icon: <BellOutlined />, // 请确保导入 BellOutlined
+                    label: <Link to="/analysis/alerts">异常监控</Link>
+                  },               
                   {
                     key: "/analysis/vehicle",
                     icon: <CarOutlined />,

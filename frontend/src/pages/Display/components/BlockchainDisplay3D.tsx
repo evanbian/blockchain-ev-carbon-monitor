@@ -24,36 +24,11 @@ interface Block3DProps {
   totalBlocks: number;
 }
 
-// 三维区块组件
+// 改进的三维区块组件
 const Block3D = ({ block, index, totalBlocks }: Block3DProps) => {
   const boxRef = useRef<Mesh>(null);
-  const [position, setPosition] = useState(new Vector3(index * 4.5, 0, 0));
+  const [position] = useState(new Vector3(index * 4.5, 0, 0));
   
-  // 平滑移动动画
-  useEffect(() => {
-    const targetX = index * 4.5;
-    const duration = 1000; // 1秒
-    const startTime = Date.now();
-    
-    const animate = () => {
-      const currentTime = Date.now();
-      const elapsed = currentTime - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      
-      // 使用缓动函数
-      const easeOutCubic = 1 - Math.pow(1 - progress, 3);
-      const newX = position.x + (targetX - position.x) * easeOutCubic;
-      
-      setPosition(new Vector3(newX, 0, 0));
-      
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      }
-    };
-    
-    animate();
-  }, [index]);
-
   // 添加轻微的上下浮动动画
   useFrame(({ clock }) => {
     if (boxRef.current) {
@@ -79,7 +54,7 @@ const Block3D = ({ block, index, totalBlocks }: Block3DProps) => {
       </Box>
       
       {/* 区块信息 HTML 覆盖层 */}
-      <Html position={[0, 2.2, 0]} center style={{ color: '#fff', pointerEvents: 'none' }}>
+      <Html position={[0, 1.7, 0]} center style={{ color: '#fff', pointerEvents: 'none' }}>
         <div style={{ 
           background: 'linear-gradient(180deg, rgba(43,133,228,0.9) 0%, rgba(26,95,180,0.8) 100%)', 
           padding: '10px 15px', 
@@ -93,7 +68,6 @@ const Block3D = ({ block, index, totalBlocks }: Block3DProps) => {
         }}>
           <div style={{ color: '#fff', marginBottom: '6px', fontWeight: 'bold' }}>区块 #{block.height}</div>
           <div style={{ color: 'rgba(255,255,255,0.9)', fontSize: '11px', marginBottom: '4px' }}>交易数: {block.transactions}</div>
-          <div style={{ color: 'rgba(255,255,255,0.9)', fontSize: '11px', marginBottom: '4px' }}>哈希: {block.hash.substring(0, 10)}...</div>
           <div style={{ color: 'rgba(255,255,255,0.9)', fontSize: '11px' }}>
             时间: {new Date(block.timestamp).toLocaleTimeString()}
           </div>
@@ -137,7 +111,7 @@ const BlockchainDisplay3D: React.FC<BlockchainDisplay3DProps> = ({
     ).join('') + '...';
   };
   
-  // 添加新区块
+  // 添加新区块的动画效果
   const addNewBlock = () => {
     const newBlockNumber = latestBlockNumber + 1;
     const prevHash = blocks.length > 0 ? blocks[0].hash : '0x0000000000...';
@@ -151,10 +125,11 @@ const BlockchainDisplay3D: React.FC<BlockchainDisplay3DProps> = ({
       height: newBlockNumber
     };
     
+    // 使用不可变更新模式更新状态
     setBlocks(prevBlocks => {
       const updatedBlocks = [newBlock, ...prevBlocks];
-      if (updatedBlocks.length > 3) { // 只保留3个区块
-        updatedBlocks.length = 3;
+      if (updatedBlocks.length > 5) { // 只保留5个区块以保持性能
+        updatedBlocks.length = 5;
       }
       return updatedBlocks;
     });
@@ -183,7 +158,7 @@ const BlockchainDisplay3D: React.FC<BlockchainDisplay3DProps> = ({
   useEffect(() => {
     const blockInterval = setInterval(() => {
       addNewBlock();
-    }, 5000); // 每5秒生成一个新区块
+    }, 8000); // 每8秒生成一个新区块
     
     return () => clearInterval(blockInterval);
   }, []);
