@@ -1,0 +1,40 @@
+{
+  "name": "ev-carbon-data-generator",
+  "version": "1.0.0",
+  "description": "Data generator for EV carbon emission reduction system",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "server": "node server.js",
+    "generate-vehicles": "node ./generators/vehicleGenerator.js",
+    "generate-driving": "node ./generators/drivingGenerator.js",
+    "generate-carbon": "node ./generators/carbonGenerator.js",
+    "generate-blockchain": "node ./generators/blockchainGenerator.js",
+    "generate-all": "node index.js --mode=batch",
+    "generate-stream": "node index.js --mode=stream",
+    "import-to-db": "node ./integrations/databaseConnector.js --import=all"
+  },
+  "keywords": [
+    "ev",
+    "carbon",
+    "blockchain",
+    "data-generator"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.4.0",
+    "commander": "^11.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "faker": "^5.5.3",
+    "fs-extra": "^11.1.1",
+    "lodash": "^4.17.21",
+    "moment": "^2.29.4",
+    "pg": "^8.11.1",
+    "socket.io": "^4.7.1",
+    "web3": "^1.10.0",
+    "winston": "^3.10.0"
+  }
+}
