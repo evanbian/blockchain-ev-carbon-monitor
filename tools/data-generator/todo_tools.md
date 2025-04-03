@@ -21,24 +21,25 @@
 - [x] 实现碳减排数据生成器 (tools/data-generator/generators/carbonGenerator.js)
 - [x] 实现区块链数据生成器 (tools/data-generator/generators/blockchainGenerator.js)
 
+### 系统集成
+- [x] 实现数据库连接器 (tools/data-generator/integrations/databaseConnector.js)
+- [x] 实现API连接器 (tools/data-generator/integrations/apiConnector.js)
+
+### 控制面板UI
+- [x] 设计控制面板界面 (tools/data-generator/ui/index.html)
+- [x] 实现控制面板前端逻辑 (tools/data-generator/ui/app.js)
+- [x] 设计界面样式 (tools/data-generator/ui/styles.css)
+
 ## 待办任务
-
-### 数据库集成
-- [ ] 实现数据库连接器 (tools/data-generator/integrations/databaseConnector.js)
-- [ ] 实现数据导入到数据库功能
-
-### API集成
-- [ ] 实现API连接器 (tools/data-generator/integrations/apiConnector.js)
-- [ ] 实现通过API提交模拟数据功能
 
 ### 区块链集成
 - [ ] 实现区块链连接器 (tools/data-generator/integrations/blockchainConnector.js)
 - [ ] 实现智能合约交互功能
 
-### 控制面板UI
-- [ ] 设计控制面板界面 (tools/data-generator/ui/index.html)
-- [ ] 实现控制面板前端逻辑 (tools/data-generator/ui/app.js)
-- [ ] 设计界面样式 (tools/data-generator/ui/styles.css)
+### 增强功能
+- [ ] 实现更复杂的场景模拟 (不同天气、交通环境等)
+- [ ] 添加异常数据生成的更多策略
+- [ ] 实现数据可视化预览
 
 ### 数据模型
 - [ ] 定义车辆数据模型 (tools/data-generator/models/vehicleModel.js)
@@ -58,9 +59,10 @@
 
 ## 下一步计划
 
-1. 完成数据库集成模块开发
-2. 开发API集成模块
-3. 实现区块链集成功能
-4. 完成控制面板UI设计与开发
-5. 编写完整文档
-6. 进行测试和性能优化
+1. 实现区块链连接器，支持与以太坊节点的直接交互
+2. 增强场景模拟能力，添加多种真实场景
+3. 设计和实现数据可视化模块
+4. 完成数据模型定义和验证
+5. 编写完整的文档
+6. 设计和实现自动化测试
+7. 性能优化及稳定性提升

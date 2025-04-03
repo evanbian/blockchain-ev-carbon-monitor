@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>碳减排数据模拟器控制面板</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+  <style>
+    body {
+      background-color: #f8f9fa;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .card {
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
+    .card:hover {
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+      transform: translateY(-3px);
+    }
+    .header-logo {
+      height: 40px;
+      margin-right: 10px;
+    }
+    .navbar {
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    }
+    .stat-card {
+      text-align: center;
+      padding: 1rem;
+    }
+    .stat-value {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #2c3e50;
+    }
+    .stat-label {
+      font-size: 0.9rem;
+      color: #7f8c8d;
+    }
+    .status-indicator {
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 5px;
+    }
+    .status-active {
+      background-color: #2ecc71;
+      animation: pulse 2s infinite;
+    }
+    .status-inactive {
+      background-color: #e74c3c;
+    }
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.5);
+      }
+      70% {
+        box-shadow: 0 0 0 10px rgba(46, 204, 113, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(46, 204, 113, 0);
+      }
+    }
+    .tab-content {
+      padding-top: 1.5rem;
+    }
+    .form-label {
+      font-weight: 500;
+    }
+    #logContainer {
+      height: 300px;
+      background-color: #2c3e50;
+      color: #ecf0f1;
+      border-radius: 5px;
+      padding: 10px;
+      font-family: 'Courier New', Courier, monospace;
+      overflow-y: auto;
+    }
+    .log-entry {
+      margin-bottom: 5px;
+      word-wrap: break-word;
+    }
+    .log-time {
+      color: #3498db;
+      margin-right: 5px;
+    }
+    .log-info {
+      color: #2ecc71;
+    }
+    .log-error {
+      color: #e74c3c;
+    }
+    .log-warn {
+      color: #f39c12;
+    }
+    #progressContainer {
+      height: 20px;
+      transition: width 0.3s ease;
+    }
+    .progress {
+      height: 20px;
+    }
+    .form-range::-webkit-slider-thumb {
+      background: #3498db;
+    }
+    .form-range::-moz-range-thumb {
+      background: #3498db;
+    }
+    .form-range::-ms-thumb {
+      background: #3498db;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">
+      <i class="bi bi-lightning-charge-fill text-warning"></i>
+      碳减排数据模拟器
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link active" href="#" data-bs-toggle="tab" data-bs-target="#dashboardTab">仪表盘</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#" data-bs-toggle="tab" data-bs-target="#generationTab">数据生成</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#" data-bs-toggle="tab" data-bs-target="#settingsTab">设置</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#" data-bs-toggle="tab" data-bs-target="#dataPreviewTab">数据预览</a>
+        </li>
+      </ul>
+    </div>
+    <div class="d-flex">
+      <div class="me-3">
+        <span class="text-light me-2">状态:</span>
+        <span id="statusIndicator" class="status-indicator status-inactive"></span>
+        <span id="statusText" class="text-light">未运行</span>
+      </div>
+    </div>
+    
+    <!-- 数据预览 -->
+    <div class="tab-pane fade" id="dataPreviewTab">
+      <div class="row">
+        <div class="col-md-12 mb-4">
+          <div class="card">
+            <div class="card-header bg-primary text-white">
+              <h5 class="mb-0">
+                <i class="bi bi-file-earmark-text me-2"></i>
+                已生成数据文件
+              </h5>
+            </div>
+            <div class="card-body">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>文件名</th>
+                    <th>大小</th>
+                    <th>最后修改</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody id="filesList">
+                  <tr>
+                    <td colspan="4" class="text-center">暂无数据文件</td>
+                  </tr>
+                </tbody>
+              </table>
+              <button class="btn btn-sm btn-outline-primary" id="refreshFilesBtn">
+                <i class="bi bi-arrow-clockwise"></i> 刷新
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="row">
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-header bg-success text-white">
+              <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                  <i class="bi bi-car-front-fill me-2"></i>
+                  车辆数据示例
+                </h5>
+                <div>
+                  <button class="btn btn-sm btn-light" id="refreshVehiclesBtn">
+                    <i class="bi bi-arrow-clockwise"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-sm table-hover">
+                  <thead>
+                    <tr>
+                      <th>VIN</th>
+                      <th>车型</th>
+                      <th>车牌</th>
+                      <th>状态</th>
+                    </tr>
+                  </thead>
+                  <tbody id="vehiclesList">
+                    <tr>
+                      <td colspan="4" class="text-center">暂无数据</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-header bg-info text-white">
+              <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                  <i class="bi bi-graph-down me-2"></i>
+                  碳减排数据示例
+                </h5>
+                <div>
+                  <button class="btn btn-sm btn-light" id="refreshCarbonBtn">
+                    <i class="bi bi-arrow-clockwise"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-sm table-hover">
+                  <thead>
+                    <tr>
+                      <th>日期</th>
+                      <th>VIN</th>
+                      <th>碳减排量(kg)</th>
+                      <th>碳积分</th>
+                    </tr>
+                  </thead>
+                  <tbody id="carbonList">
+                    <tr>
+                      <td colspan="4" class="text-center">暂无数据</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="row mt-4">
+        <div class="col-md-12">
+          <div class="card">
+            <div class="card-header bg-secondary text-white">
+              <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                  <i class="bi bi-filetype-json me-2"></i>
+                  JSON数据查看器
+                </h5>
+                <div class="btn-group">
+                  <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    选择文件
+                  </button>
+                  <ul class="dropdown-menu" id="jsonFilesDropdown">
+                    <li><a class="dropdown-item" href="#">vehicles.json</a></li>
+                    <li><a class="dropdown-item" href="#">driving-data.json</a></li>
+                    <li><a class="dropdown-item" href="#">carbon-data.json</a></li>
+                    <li><a class="dropdown-item" href="#">blockchain-data.json</a></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <pre id="jsonViewer" class="bg-light p-3" style="max-height: 400px; overflow: auto;">选择一个JSON文件查看内容</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 模态框 -->
+<div class="modal fade" id="alertModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="alertModalTitle">提示</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="alertModalBody">
+        操作已完成。
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">确定</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.6.1/dist/socket.io.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
+    
+    <!-- 设置 -->
+    <div class="tab-pane fade" id="settingsTab">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-header bg-secondary text-white">
+              <h5 class="mb-0">
+                <i class="bi bi-sliders me-2"></i>
+                基本配置
+              </h5>
+            </div>
+            <div class="card-body">
+              <form id="basicSettingsForm">
+                <div class="mb-3">
+                  <label for="outputDir" class="form-label">输出目录</label>
+                  <input type="text" class="form-control" id="outputDir" value="./output">
+                </div>
+                
+                <div class="mb-3">
+                  <label for="defaultMode" class="form-label">默认生成模式</label>
+                  <select class="form-select" id="defaultMode">
+                    <option value="batch">批量生成</option>
+                    <option value="stream">流式生成</option>
+                  </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">保存基本配置</button>
+              </form>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-header bg-info text-white">
+              <h5 class="mb-0">
+                <i class="bi bi-graph-up-arrow me-2"></i>
+                计算参数设置
+              </h5>
+            </div>
+            <div class="card-body">
+              <form id="carbonSettingsForm">
+                <div class="mb-3">
+                  <label for="gridEmissionFactor" class="form-label">电网排放因子 (kg CO2/kWh)</label>
+                  <input type="number" step="0.0001" class="form-control" id="gridEmissionFactor" value="0.8547">
+                </div>
+                
+                <div class="mb-3">
+                  <label for="traditionalVehicleEmission" class="form-label">传统燃油车排放因子 (kg CO2/km)</label>
+                  <input type="number" step="0.001" class="form-control" id="traditionalVehicleEmission" value="0.196">
+                </div>
+                
+                <div class="mb-3">
+                  <label for="creditsConversionRate" class="form-label">碳积分转换系数</label>
+                  <input type="number" step="0.01" class="form-control" id="creditsConversionRate" value="0.05">
+                </div>
+                
+                <button type="submit" class="btn btn-info text-white">保存计算参数</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="row mt-4">
+        <div class="col-md-12">
+          <div class="card">
+            <div class="card-header bg-dark text-white">
+              <h5 class="mb-0">
+                <i class="bi bi-hdd-network me-2"></i>
+                系统集成配置
+              </h5>
+            </div>
+            <div class="card-body">
+              <ul class="nav nav-tabs" id="integrationTabs">
+                <li class="nav-item">
+                  <a class="nav-link active" data-bs-toggle="tab" href="#apiTab">API设置</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" data-bs-toggle="tab" href="#dbTab">数据库设置</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" data-bs-toggle="tab" href="#blockchainTab">区块链设置</a>
+                </li>
+              </ul>
+              
+              <div class="tab-content mt-3">
+                <div class="tab-pane fade show active" id="apiTab">
+                  <form id="apiSettingsForm">
+                    <div class="mb-3">
+                      <label for="apiBaseUrl" class="form-label">API基础URL</label>
+                      <input type="url" class="form-control" id="apiBaseUrl" value="http://localhost:8080/api/v1">
+                    </div>
+                    
+                    <div class="mb-3">
+                      <label for="apiKey" class="form-label">API密钥</label>
+                      <input type="password" class="form-control" id="apiKey">
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                      <button type="submit" class="btn btn-primary">保存API设置</button>
+                      <button type="button" class="btn btn-outline-info" id="testApiBtn">测试连接</button>
+                    </div>
+                  </form>
+                </div>
+                
+                <div class="tab-pane fade" id="dbTab">
+                  <form id="dbSettingsForm">
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="mb-3">
+                          <label for="dbHost" class="form-label">主机</label>
+                          <input type="text" class="form-control" id="dbHost" value="localhost">
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="mb-3">
+                          <label for="dbPort" class="form-label">端口</label>
+                          <input type="number" class="form-control" id="dbPort" value="5432">
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                      <label for="dbName" class="form-label">数据库名</label>
+                      <input type="text" class="form-control" id="dbName" value="evcarbonmonitor">
+                    </div>
+                    
+                    <div class="mb-3">
+                      <label for="dbUser" class="form-label">用户名</label>
+                      <input type="text" class="form-control" id="dbUser" value="postgres">
+                    </div>
+                    
+                    <div class="mb-3">
+                      <label for="dbPassword" class="form-label">密码</label>
+                      <input type="password" class="form-control" id="dbPassword">
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                      <button type="submit" class="btn btn-primary">保存数据库设置</button>
+                      <button type="button" class="btn btn-outline-info" id="testDbBtn">测试连接</button>
+                    </div>
+                  </form>
+                </div>
+                
+                <div class="tab-pane fade" id="blockchainTab">
+                  <form id="blockchainSettingsForm">
+                    <div class="mb-3">
+                      <label for="blockchainProvider" class="form-label">区块链提供者URL</label>
+                      <input type="url" class="form-control" id="blockchainProvider" value="http://localhost:8545">
+                    </div>
+                    
+                    <div class="mb-3">
+                      <label for="blockInterval" class="form-label">区块生成间隔 (秒)</label>
+                      <input type="number" class="form-control" id="blockInterval" value="12">
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                      <button type="submit" class="btn btn-primary">保存区块链设置</button>
+                      <button type="button" class="btn btn-outline-info" id="testBlockchainBtn">测试连接</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="container mt-4">
+  <div class="tab-content">
+    <!-- 仪表盘 -->
+    <div class="tab-pane fade show active" id="dashboardTab">
+      <div class="row mb-4">
+        <div class="col">
+          <div class="card">
+            <div class="card-header bg-primary text-white">
+              <h5 class="mb-0">
+                <i class="bi bi-speedometer2 me-2"></i>
+                数据生成状态
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-3">
+                  <div class="stat-card">
+                    <div class="stat-value" id="vehicleCount">0</div>
+                    <div class="stat-label">车辆数</div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="stat-card">
+                    <div class="stat-value" id="drivingCount">0</div>
+                    <div class="stat-label">行驶记录数</div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="stat-card">
+                    <div class="stat-value" id="carbonCount">0</div>
+                    <div class="stat-label">碳减排记录数</div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="stat-card">
+                    <div class="stat-value" id="blockchainCount">0</div>
+                    <div class="stat-label">区块链记录数</div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span>当前进度</span>
+                  <span id="progressPercent">0%</span>
+                </div>
+                <div class="progress">
+                  <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="row">
+        <div class="col-md-12">
+          <div class="card">
+            <div class="card-header bg-info text-white">
+              <h5 class="mb-0">
+                <i class="bi bi-terminal me-2"></i>
+                日志输出
+              </h5>
+            </div>
+            <div class="card-body">
+              <div id="logContainer"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 数据生成 -->
+    <div class="tab-pane fade" id="generationTab">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-header bg-success text-white">
+              <h5 class="mb-0">
+                <i class="bi bi-database-fill-gear me-2"></i>
+                批量生成配置
+              </h5>
+            </div>
+            <div class="card-body">
+              <form id="batchGenerationForm">
+                <div class="mb-3">
+                  <label for="vehicleCount" class="form-label">车辆数量</label>
+                  <input type="range" class="form-range" min="5" max="50" value="15" id="vehicleCountRange">
+                  <div class="d-flex justify-content-between">
+                    <span>5</span>
+                    <span id="vehicleCountValue">15</span>
+                    <span>50</span>
+                  </div>
+                </div>
+                
+                <div class="mb-3">
+                  <label for="timeRangeStart" class="form-label">时间范围</label>
+                  <div class="row">
+                    <div class="col">
+                      <input type="date" class="form-control" id="timeRangeStart" value="2023-01-01">
+                      <small class="form-text text-muted">开始日期</small>
+                    </div>
+                    <div class="col">
+                      <input type="date" class="form-control" id="timeRangeEnd" value="2023-07-01">
+                      <small class="form-text text-muted">结束日期</small>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="mb-3">
+                  <label class="form-label">生成数据类型</label>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="generateVehicles" checked>
+                    <label class="form-check-label" for="generateVehicles">
+                      车辆数据
+                    </label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="generateDriving" checked>
+                    <label class="form-check-label" for="generateDriving">
+                      行驶数据
+                    </label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="generateCarbon" checked>
+                    <label class="form-check-label" for="generateCarbon">
+                      碳减排数据
+                    </label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="generateBlockchain" checked>
+                    <label class="form-check-label" for="generateBlockchain">
+                      区块链数据
+                    </label>
+                  </div>
+                </div>
+                
+                <div class="mb-3">
+                  <label for="randomSeed" class="form-label">随机种子</label>
+                  <input type="text" class="form-control" id="randomSeed" value="ev-carbon-2023">
+                  <small class="form-text text-muted">使用相同种子可生成相同的随机数据</small>
+                </div>
+                
+                <button type="submit" class="btn btn-success" id="startBatchBtn">
+                  <i class="bi bi-play-fill"></i> 开始批量生成
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-header bg-primary text-white">
+              <h5 class="mb-0">
+                <i class="bi bi-arrow-repeat me-2"></i>
+                实时流式生成配置
+              </h5>
+            </div>
+            <div class="card-body">
+              <form id="streamGenerationForm">
+                <div class="mb-3">
+                  <label for="streamInterval" class="form-label">生成间隔 (秒)</label>
+                  <input type="range" class="form-range" min="10" max="300" step="10" value="60" id="streamIntervalRange">
+                  <div class="d-flex justify-content-between">
+                    <span>10秒</span>
+                    <span id="streamIntervalValue">60秒</span>
+                    <span>300秒</span>
+                  </div>
+                </div>
+                
+                <div class="mb-3">
+                  <label for="streamVehicleCount" class="form-label">活跃车辆数量</label>
+                  <input type="range" class="form-range" min="1" max="20" value="5" id="streamVehicleCountRange">
+                  <div class="d-flex justify-content-between">
+                    <span>1</span>
+                    <span id="streamVehicleCountValue">5</span>
+                    <span>20</span>
+                  </div>
+                </div>
+                
+                <div class="mb-3">
+                  <label for="anomalyRate" class="form-label">异常数据率 (%)</label>
+                  <input type="range" class="form-range" min="0" max="30" value="5" id="anomalyRateRange">
+                  <div class="d-flex justify-content-between">
+                    <span>0%</span>
+                    <span id="anomalyRateValue">5%</span>
+                    <span>30%</span>
+                  </div>
+                </div>
+                
+                <div class="mb-3">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="autoSubmit">
+                    <label class="form-check-label" for="autoSubmit">
+                      自动提交到API
+                    </label>
+                  </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" id="startStreamBtn">
+                  <i class="bi bi-play-fill"></i> 开始流式生成
+                </button>
+                <button type="button" class="btn btn-danger d-none" id="stopStreamBtn">
+                  <i class="bi bi-stop-fill"></i> 停止生成
+                </button>
+              </form>
+            </div>
+          </div>
+          
+          <div class="card mt-4">
+            <div class="card-header bg-warning text-dark">
+              <h5 class="mb-0">
+                <i class="bi bi-tools me-2"></i>
+                工具操作
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="d-grid gap-2">
+                <button class="btn btn-outline-danger" id="resetDataBtn">
+                  <i class="bi bi-trash"></i> 清空生成数据
+                </button>
+                <button class="btn btn-outline-primary" id="submitApiBtn">
+                  <i class="bi bi-cloud-arrow-up"></i> 提交数据到API
+                </button>
+                <button class="btn btn-outline-success" id="importDbBtn">
+                  <i class="bi bi-database-up"></i> 导入数据到数据库
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
