@@ -23,8 +23,8 @@ const AlertHistory: React.FC = () => {
   const [filterParams, setFilterParams] = useState({
     level: 'all',
     status: 'all',
-    startDate: undefined,
-    endDate: undefined,
+    startDate: undefined as string | undefined,
+    endDate: undefined as string | undefined,
     vin: undefined
   });
   
@@ -33,19 +33,67 @@ const AlertHistory: React.FC = () => {
     try {
       dispatch(fetchAlertsStart());
       
-      const response = await alertsAPI.getAlerts({
+      // Prepare parameters for the API call
+      const apiParams: Record<string, any> = {
         page,
         size: pageSize,
-        ...filterParams
-      });
+        sort: 'alertTime,desc',
+      };
+
+      // Add VIN if present
+      if (filterParams.vin) {
+        apiParams.vin = filterParams.vin;
+      }
+
+      // Add level if not 'all', converting to uppercase
+      if (filterParams.level && filterParams.level !== 'all') {
+        apiParams.level = filterParams.level.toUpperCase();
+      }
+
+      // Add status if not 'all', mapping values
+      if (filterParams.status && filterParams.status !== 'all') {
+        if (filterParams.status === 'new') {
+          apiParams.status = 'NEW';
+        } else if (filterParams.status === 'resolved') {
+          apiParams.status = 'RESOLVED';
+        }
+        // Note: 'acknowledged' is currently not sent to the backend filter
+      }
+
+      // Add date range if present
+      if (filterParams.startDate) {
+        apiParams.startDate = filterParams.startDate;
+      }
+      if (filterParams.endDate) {
+        apiParams.endDate = filterParams.endDate;
+      }
       
-      dispatch(fetchAlertsSuccess(response.data));
-      setPagination({
-        ...pagination,
-        current: page,
-        pageSize,
-        total: response.data.total
-      });
+      // console.log('Sending API params:', apiParams); // Debug log
+
+      const response = await alertsAPI.getAlerts(apiParams);
+      
+      if (response && response.data && response.data.content) {
+        dispatch(fetchAlertsSuccess({ 
+            items: response.data.content, 
+            total: response.data.totalElements || 0
+        }));
+        setPagination({
+          ...pagination,
+          current: page,
+          pageSize,
+          total: response.data.totalElements || 0
+        });
+      } else {
+        console.warn("Invalid API response structure for alert history:", response);
+        dispatch(fetchAlertsSuccess({ items: [], total: 0 }));
+         setPagination({
+          ...pagination,
+          current: page,
+          pageSize,
+          total: 0
+        });
+      }
+
     } catch (error) {
       console.error('加载告警历史数据失败:', error);
       dispatch(fetchAlertsFailure(error instanceof Error ? error.message : 'Unknown error'));
@@ -125,9 +173,11 @@ const AlertHistory: React.FC = () => {
           medium: '中',
           high: '高'
         };
+        // Convert incoming level (e.g., 'HIGH') to lowercase ('high') for lookup
+        const lookupKey = level ? level.toLowerCase() : '';
         return (
-          <Tag color={colors[level as keyof typeof colors] || 'default'}>
-            {levelName[level as keyof typeof levelName] || level}
+          <Tag color={colors[lookupKey as keyof typeof colors] || 'default'}>
+            {levelName[lookupKey as keyof typeof levelName] || level}
           </Tag>
         );
       }
@@ -143,29 +193,41 @@ const AlertHistory: React.FC = () => {
       dataIndex: 'status',
       key: 'status',
       render: (status: string) => {
+        // Map backend status (NEW/ACKNOWLEDGED/RESOLVED) to frontend display keys
+        let displayKey: string;
+        if (status === 'NEW') {
+          displayKey = 'new'; // Use 'new' for styling/naming
+        } else if (status === 'RESOLVED') {
+          displayKey = 'resolved'; // Use 'resolved' for styling/naming
+        } else if (status === 'ACKNOWLEDGED') {
+          displayKey = 'acknowledged'; // Use 'acknowledged' for styling/naming
+        } else {
+          displayKey = status; // Fallback
+        }
+
         const colors = {
-          new: 'red',
-          acknowledged: 'orange',
-          resolved: 'green'
+          new: 'red', // Corresponds to NEW
+          acknowledged: 'orange', // Corresponds to ACKNOWLEDGED
+          resolved: 'green' // Corresponds to RESOLVED
         };
         const statusName = {
-          new: '未处理',
-          acknowledged: '已确认',
-          resolved: '已解决'
+          new: '未处理', // Corresponds to NEW
+          acknowledged: '已确认', // Corresponds to ACKNOWLEDGED
+          resolved: '已解决' // Corresponds to RESOLVED
         };
         return (
-          <Tag color={colors[status as keyof typeof colors] || 'default'}>
-            {statusName[status as keyof typeof statusName] || status}
+          <Tag color={colors[displayKey as keyof typeof colors] || 'default'}>
+            {statusName[displayKey as keyof typeof statusName] || status}
           </Tag>
         );
       }
     },
     {
       title: '时间',
-      dataIndex: 'time',
-      key: 'time',
+      dataIndex: 'alertTime',
+      key: 'alertTime',
       sorter: true,
-      render: (text: string) => moment(text).format('YYYY-MM-DD HH:mm:ss')
+      render: (text: string) => text ? moment(text).format('YYYY-MM-DD HH:mm:ss') : '-'
     },
     {
       title: '操作',
@@ -213,20 +275,12 @@ const AlertHistory: React.FC = () => {
             </Select>
             
             <RangePicker
-              onChange={(dates) => {
-                if (dates) {
-                  setFilterParams({
-                    ...filterParams, 
-                    startDate: dates[0]?.format('YYYY-MM-DD'),
-                    endDate: dates[1]?.format('YYYY-MM-DD')
-                  });
-                } else {
-                  setFilterParams({
-                    ...filterParams,
-                    startDate: undefined,
-                    endDate: undefined
-                  });
-                }
+              onChange={(dates, dateStrings) => {
+                setFilterParams({
+                  ...filterParams, 
+                  startDate: dateStrings[0] || undefined,
+                  endDate: dateStrings[1] || undefined
+                });
               }}
             />
             
@@ -255,9 +309,10 @@ const AlertHistory: React.FC = () => {
           dataSource={alerts}
           rowKey="id"
           pagination={{
-            ...pagination,
+            current: pagination.current,
+            pageSize: pagination.pageSize,
+            total: pagination.total,
             showSizeChanger: true,
-            showQuickJumper: true,
             showTotal: (total) => `共 ${total} 条告警`
           }}
           loading={loading}

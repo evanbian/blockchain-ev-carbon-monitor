@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/v1/vehicles")  
+@RequestMapping("/api/v1/vehicles")
 public class VehicleController {
 
     private static final Logger logger = LoggerFactory.getLogger(VehicleController.class);

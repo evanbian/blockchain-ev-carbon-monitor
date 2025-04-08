@@ -45,6 +45,13 @@
 - [x] 异常监控模块
   - [x] 实时告警页面
   - [x] 告警历史页面
+  - [x] **后端 API 对接与修复:**
+    - [x] 对接告警列表 API (`GET /api/v1/alerts`)
+    - [x] 修正 API 调用参数处理 (level='all', status 映射: new->NEW, resolved->RESOLVED)
+    - [x] 修复 Redux Slice (`alertsSlice`) payload 结构不匹配问题
+    - [x] 修复 `RealTimeAlerts` 页面因 `alerts` 状态为 undefined 导致的崩溃
+    - [x] 修复 `AlertHistory` 表格渲染 (level, status, alertTime)
+    - [x] 统一并修复全局 API 路径配置 (移除后端 context-path 后的适配)
 
 ### 展示平台
 - [x] 实现布局和总体设计
@@ -110,6 +117,8 @@
    - 提升数据可视化组件交互性
 
 ## 依赖事项
-- 需要后端提供异常监控API接口
+- [x] ~~需要后端提供异常监控API接口~~ (基础接口已提供并对接: GET list)
+- [ ] 需要后端提供告警详情接口 (`GET /api/v1/alerts/:id`) (待对接)
+- [ ] 需要后端提供告警状态更新接口 (`PUT /api/v1/alerts/:id/status`) (待对接)
 - 需要区块链团队提供智能合约ABI和部署地址
 - 需要确认实时数据更新技术选型(WebSocket/SSE)

@@ -1,17 +1,19 @@
 // frontend/src/services/vehicles.ts
 import api from './api';
-import config from '@/config';
+// import config from '@/config'; // No longer needed for base URLs here
 import { Vehicle } from '@/types/vehicle';
 
+const VEHICLE_API_PATH = '/api/v1/vehicles'; // Define base path consistently
+
 const vehicleAPI = {
-  baseUrl: config.api.baseUrl,
+  // baseUrl: config.api.baseUrl, // Remove unused property
   /**
    * 获取车辆列表
    * @param params 查询参数 (page, size, status, sort, order)
    * @returns 车辆列表和分页信息
    */
   getVehicles: async (params: any) => {
-    return api.get(config.api.vehiclesUrl, { params });
+    return api.get(VEHICLE_API_PATH, { params });
   },
   
   /**
@@ -20,7 +22,7 @@ const vehicleAPI = {
    * @returns 车辆详情
    */
   getVehicleById: async (vin: string) => {
-    return api.get(`${config.api.vehiclesUrl}/${vin}`);
+    return api.get(`${VEHICLE_API_PATH}/${vin}`);
   },
   
   /**
@@ -29,7 +31,7 @@ const vehicleAPI = {
    * @returns 创建结果
    */
   createVehicle: async (vehicle: Partial<Vehicle>) => {
-    return api.post(config.api.vehiclesUrl, vehicle);
+    return api.post(VEHICLE_API_PATH, vehicle);
   },
   
   /**
@@ -39,7 +41,7 @@ const vehicleAPI = {
    * @returns 更新结果
    */
   updateVehicle: async (vin: string, vehicle: Partial<Vehicle>) => {
-    return api.put(`${config.api.vehiclesUrl}/${vin}`, vehicle);
+    return api.put(`${VEHICLE_API_PATH}/${vin}`, vehicle);
   },
   
   /**
@@ -48,7 +50,7 @@ const vehicleAPI = {
    * @returns 删除结果
    */
   deleteVehicle: async (vin: string) => {
-    return api.delete(`${config.api.vehiclesUrl}/${vin}`);
+    return api.delete(`${VEHICLE_API_PATH}/${vin}`);
   },
 
   /**
@@ -57,7 +59,8 @@ const vehicleAPI = {
    */
   getAllVehiclesDebug: async () => {
     console.log("调用调试API获取所有车辆");
-    const response = await api.get(`${config.api.vehiclesUrl}/debug/all`);
+    // Adjust debug path as well
+    const response = await api.get(`${VEHICLE_API_PATH}/debug/all`);
     console.log("调试API响应:", response);
     return response;
   },
@@ -71,7 +74,8 @@ const vehicleAPI = {
     const formData = new FormData();
     formData.append('file', file);
     
-    return api.post(`${config.api.vehiclesUrl}/batch`, formData, {
+    // Adjust batch path as well
+    return api.post(`${VEHICLE_API_PATH}/batch`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }

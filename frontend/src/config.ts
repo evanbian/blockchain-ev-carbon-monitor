@@ -8,7 +8,7 @@
 const ENV = import.meta.env.MODE || 'development';
 
 // API基础URL
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
 // 区块链节点URL
 const WEB3_PROVIDER = import.meta.env.VITE_WEB3_PROVIDER || 'http://localhost:8545';

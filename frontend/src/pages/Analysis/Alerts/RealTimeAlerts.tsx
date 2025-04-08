@@ -27,13 +27,48 @@ const RealTimeAlerts: React.FC = () => {
     try {
       dispatch(fetchAlertsStart());
       
-      // 设置默认筛选为"未处理"的告警
-      const response = await alertsAPI.getAlerts({
-        page: 1,
-        size: 50,
-        ...filterParams
-      });
-      dispatch(fetchAlertsSuccess(response.data));
+      // Prepare parameters for the API call
+      const apiParams: Record<string, any> = {
+        page: 0, // Fetch first page for real-time, 0-indexed for backend typically
+        size: 50, // Fetch a reasonable number for real-time display
+        sort: 'alertTime,desc', // Sort by time descending by default
+      };
+      
+      // Add VIN if present
+      if (filterParams.vin) {
+        apiParams.vin = filterParams.vin;
+      }
+
+      // Add level if not 'all', converting to uppercase
+      if (filterParams.level && filterParams.level !== 'all') {
+        apiParams.level = filterParams.level.toUpperCase();
+      }
+
+      // Add status if not 'all', mapping values
+      if (filterParams.status && filterParams.status !== 'all') {
+        if (filterParams.status === 'new') {
+          apiParams.status = 'NEW';
+        } else if (filterParams.status === 'resolved') {
+          apiParams.status = 'RESOLVED';
+        }
+        // Note: 'acknowledged' is currently not sent to the backend filter
+      }
+
+      // console.log('Sending API params (RealTime):', apiParams); // Debug log
+      
+      const response = await alertsAPI.getAlerts(apiParams);
+      
+      // Extract alerts list from response.data.content
+      // Assuming fetchAlertsSuccess expects the array of alerts
+      if (response && response.data && response.data.content) { 
+        // Dispatch payload matching the reducer's expected shape {items, total}
+        dispatch(fetchAlertsSuccess({ items: response.data.content, total: response.data.totalElements || 0 }));
+      } else {
+        console.warn("Invalid API response structure for alerts:", response);
+        // Dispatch empty array matching the reducer's expected shape
+        dispatch(fetchAlertsSuccess({ items: [], total: 0 })); 
+      }
+
     } catch (error) {
       console.error('加载告警数据失败:', error);
       dispatch(fetchAlertsFailure(error instanceof Error ? error.message : 'Unknown error'));

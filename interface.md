@@ -361,9 +361,136 @@
   }
   ```
 
-### 3. 区块链接口
+### 3. 告警监控接口 (新增)
 
-#### 3.1 获取区块信息
+#### 3.1 获取告警列表
+
+- **URL**: `/api/v1/alerts`
+- **Method**: `GET`
+- **描述**: 获取告警列表，支持分页和筛选。
+- **请求参数**:
+  - `page` (可选): 页码，Spring Data Pageable 默认从 0 开始，前端传递时可能需要调整或使用 @PageableDefault。默认 0。
+  - `size` (可选): 每页记录数。默认 10。
+  - `sort` (可选): 排序字段和方向，格式如 `alertTime,desc` 或 `level,asc`。
+  - `vin` (可选): 按车辆VIN码筛选。
+  - `level` (可选): 按告警级别筛选，接受的值: `HIGH`, `MEDIUM`, `LOW`。
+  - `status` (可选): 按告警状态筛选，接受的值: `NEW`, `ACKNOWLEDGED`, `RESOLVED`。
+  - `startDate` (可选): 按告警时间筛选（开始日期），格式 `YYYY-MM-DD`。
+  - `endDate` (可选): 按告警时间筛选（结束日期），格式 `YYYY-MM-DD`。
+- **响应示例**:
+  ```json
+  {
+    "success": true,
+    "code": 200,
+    "message": "获取成功",
+    "data": {
+      "content": [
+        {
+          "id": "alert_uuid_1",
+          "vin": "LSVAU2180N2183294",
+          "type": "电池电压异常",
+          "level": "HIGH", // 枚举字符串值
+          "message": "电池单体电压差过大",
+          "detail": "第3串第15节电芯电压低于阈值",
+          "alertTime": "2024-04-08T10:15:30Z",
+          "status": "NEW", // 枚举字符串值
+          "relatedData": "{\"voltage_diff\": 0.8, \"cell_index\": \"3-15\"}",
+          "comment": null,
+          "createdAt": "2024-04-08T10:15:35Z"
+        }
+        // ... more alerts
+      ],
+      "pageable": {
+        "pageNumber": 0,
+        "pageSize": 10,
+        "sort": {
+          "sorted": true,
+          "unsorted": false,
+          "empty": false
+        },
+        "offset": 0,
+        "paged": true,
+        "unpaged": false
+      },
+      "last": false,
+      "totalElements": 55,
+      "totalPages": 6,
+      "size": 10,
+      "number": 0,
+      "sort": {
+         "sorted": true,
+         "unsorted": false,
+         "empty": false
+      },
+      "first": true,
+      "numberOfElements": 10,
+      "empty": false
+    }
+  }
+  ```
+
+#### 3.2 获取告警详情
+
+- **URL**: `/api/v1/alerts/:id`
+- **Method**: `GET`
+- **描述**: 获取指定告警的详细信息。
+- **URL参数**:
+  - `id`: 告警的唯一ID。
+- **响应示例**:
+  ```json
+  {
+    "success": true,
+    "code": 200,
+    "message": "获取成功",
+    "data": {
+       "id": "alert_uuid_1",
+       "vin": "LSVAU2180N2183294",
+       "type": "电池电压异常",
+       "level": "HIGH",
+       "message": "电池单体电压差过大",
+       "detail": "第3串第15节电芯电压低于阈值",
+       "alertTime": "2024-04-08T10:15:30Z",
+       "status": "NEW",
+       "relatedData": "{\"voltage_diff\": 0.8, \"cell_index\": \"3-15\"}",
+       "comment": null,
+       "createdAt": "2024-04-08T10:15:35Z"
+    }
+  }
+  ```
+
+#### 3.3 更新告警状态
+
+- **URL**: `/api/v1/alerts/:id/status`
+- **Method**: `PUT`
+- **描述**: 更新指定告警的状态（例如，确认或解决告警）。
+- **URL参数**:
+  - `id`: 告警的唯一ID。
+- **请求体**:
+  ```json
+  {
+    "status": "ACKNOWLEDGED", // 目标状态: ACKNOWLEDGED 或 RESOLVED
+    "comment": "已通知运维人员检查。" // 可选备注
+  }
+  ```
+- **响应示例**:
+  ```json
+  {
+    "success": true,
+    "code": 200,
+    "message": "更新成功",
+    "data": {
+       "id": "alert_uuid_1",
+       "vin": "LSVAU2180N2183294",
+       // ... 其他字段 ...
+       "status": "ACKNOWLEDGED", // 返回更新后的状态
+       "comment": "已通知运维人员检查。"
+    }
+  }
+  ```
+
+### 4. 区块链接口
+
+#### 4.1 获取区块信息
 
 - **URL**: `/api/v1/blockchain/blocks`
 - **Method**: `GET`
@@ -392,7 +519,7 @@
   }
   ```
 
-#### 3.2 获取区块详情
+#### 4.2 获取区块详情
 
 - **URL**: `/api/v1/blockchain/blocks/:blockNumber`
 - **Method**: `GET`
@@ -425,7 +552,7 @@
   }
   ```
 
-#### 3.3 获取交易信息
+#### 4.3 获取交易信息
 
 - **URL**: `/api/v1/blockchain/transactions/:txHash`
 - **Method**: `GET`
