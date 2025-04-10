@@ -2,6 +2,9 @@ package com.example.evcarbonmonitor.service.impl;
 
 import com.example.evcarbonmonitor.domain.CarbonEmission;
 import com.example.evcarbonmonitor.domain.Vehicle;
+import com.example.evcarbonmonitor.dto.DrivingData;
+import com.example.evcarbonmonitor.dto.DrivingTimeSeriesPoint;
+import com.example.evcarbonmonitor.dto.HeatmapDataPoint;
 import com.example.evcarbonmonitor.exception.ResourceNotFoundException;
 import com.example.evcarbonmonitor.repository.CarbonEmissionRepository;
 import com.example.evcarbonmonitor.repository.VehicleRepository;
@@ -19,8 +22,11 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAdjusters;
+import java.time.temporal.WeekFields;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -180,16 +186,18 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     }
 
     @Override
-    public Map<String, Object> getDrivingData(String vin, LocalDateTime startDate, LocalDateTime endDate, List<String> metrics) {
+    public DrivingData getDrivingDataSummary(String vin, LocalDate startDate, LocalDate endDate) {
+        log.info("Fetching driving data summary for VIN: {}, Start: {}, End: {}", vin, startDate, endDate);
         Vehicle vehicle = vehicleRepository.findById(vin)
                 .orElseThrow(() -> new ResourceNotFoundException("Vehicle", vin));
-        
+
+        LocalDateTime startDateTime = startDate.atStartOfDay();
+        LocalDateTime endDateTime = endDate.plusDays(1).atStartOfDay();
+
+        // Corrected repository method call
         List<CarbonEmission> emissions = carbonEmissionRepository.findByVehicleAndCalculationTimeBetweenOrderByCalculationTimeDesc(
-                vehicle, startDate, endDate);
-        
-        Map<String, Object> drivingData = new HashMap<>();
-        
-        // Use BigDecimal for calculations if precision is important
+                vehicle, startDateTime, endDateTime);
+
         BigDecimal totalMileage = BigDecimal.ZERO;
         BigDecimal totalEnergy = BigDecimal.ZERO;
         BigDecimal totalReduction = BigDecimal.ZERO;
@@ -200,27 +208,203 @@ public class AnalyticsServiceImpl implements AnalyticsService {
              totalReduction = totalReduction.add(BigDecimal.valueOf(emission.getCarbonReduction()));
         }
 
-        if (metrics.contains("mileage")) {
-            drivingData.put("totalMileage", totalMileage.setScale(2, ROUNDING_MODE));
+        BigDecimal averageEfficiency = BigDecimal.ZERO;
+        if (totalMileage.compareTo(BigDecimal.ZERO) > 0) {
+             averageEfficiency = totalEnergy.divide(totalMileage, CALCULATION_SCALE, ROUNDING_MODE).multiply(BigDecimal.valueOf(100));
         }
-        
-        if (metrics.contains("energy")) {
-            drivingData.put("totalEnergy", totalEnergy.setScale(2, ROUNDING_MODE));
+
+        // Create and return the DTO object
+        return new DrivingData(
+                totalMileage.setScale(2, ROUNDING_MODE),
+                totalEnergy.setScale(2, ROUNDING_MODE),
+                totalReduction.setScale(2, ROUNDING_MODE),
+                averageEfficiency.setScale(2, ROUNDING_MODE)
+        );
+    }
+
+    @Override
+    public List<DrivingTimeSeriesPoint> getDrivingTimeSeries(String vin, LocalDate startDate, LocalDate endDate, String groupBy) {
+        log.info("Fetching driving time series for VIN: {}, Start: {}, End: {}, GroupBy: {}", vin, startDate, endDate, groupBy);
+        Vehicle vehicle = vehicleRepository.findById(vin)
+                .orElseThrow(() -> new ResourceNotFoundException("Vehicle", vin));
+
+        LocalDateTime startDateTime = startDate.atStartOfDay();
+        LocalDateTime endDateTime = endDate.plusDays(1).atStartOfDay();
+
+        // --- Logic for Daily Aggregation --- 
+        if ("day".equalsIgnoreCase(groupBy)) {
+            List<CarbonEmissionRepository.DailyDrivingAggregate> dailyAggregates = 
+                carbonEmissionRepository.findDailyDrivingAggregatesByVehicleAndTimeRange(vehicle, startDateTime, endDateTime);
+
+            return dailyAggregates.stream()
+                .map(agg -> {
+                    BigDecimal mileage = BigDecimal.valueOf(agg.getTotalDistance() != null ? agg.getTotalDistance() : 0.0);
+                    BigDecimal energy = BigDecimal.valueOf(agg.getTotalEnergyConsumption() != null ? agg.getTotalEnergyConsumption() : 0.0);
+                    BigDecimal reduction = BigDecimal.valueOf(agg.getTotalCarbonReduction() != null ? agg.getTotalCarbonReduction() : 0.0);
+                    BigDecimal energyPer100km = BigDecimal.ZERO;
+                    if (mileage.compareTo(BigDecimal.ZERO) > 0) {
+                        energyPer100km = energy.divide(mileage, CALCULATION_SCALE, ROUNDING_MODE).multiply(BigDecimal.valueOf(100));
+                    }
+                    return new DrivingTimeSeriesPoint(
+                        agg.getCalculationDate().toString(),
+                        mileage.setScale(2, ROUNDING_MODE),
+                        energy.setScale(2, ROUNDING_MODE),
+                        reduction.setScale(2, ROUNDING_MODE),
+                        energyPer100km.setScale(2, ROUNDING_MODE)
+                    );
+                })
+                .collect(Collectors.toList());
         }
-        
-        if (metrics.contains("carbonReduction")) {
-            drivingData.put("totalReduction", totalReduction.setScale(2, ROUNDING_MODE));
+
+        // --- Logic for Weekly/Monthly Aggregation (calculated in Java from daily/raw data) ---
+        // Fetching all raw data for simplicity. Could optimize with daily aggregates.
+        // Corrected repository method call
+        List<CarbonEmission> emissions = carbonEmissionRepository.findByVehicleAndCalculationTimeBetweenOrderByCalculationTimeDesc(
+                vehicle, startDateTime, endDateTime);
+
+        if ("week".equalsIgnoreCase(groupBy)) {
+            // Group by week (using ISO week fields)
+            Map<Integer, List<CarbonEmission>> groupedByWeek = emissions.stream()
+                .collect(Collectors.groupingBy(e -> e.getCalculationTime().get(WeekFields.ISO.weekOfYear())));
+                
+            return groupedByWeek.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey()) // Sort by week number
+                .map(entry -> {
+                    Integer weekNum = entry.getKey(); // Or derive start date of week
+                    List<CarbonEmission> weekEmissions = entry.getValue();
+                    LocalDate weekStartDate = weekEmissions.stream().map(e -> e.getCalculationTime().toLocalDate()).min(LocalDate::compareTo).orElse(null);
+
+                    BigDecimal totalMileage = weekEmissions.stream().map(e -> BigDecimal.valueOf(e.getDistance())).reduce(BigDecimal.ZERO, BigDecimal::add);
+                    BigDecimal totalEnergy = weekEmissions.stream().map(e -> BigDecimal.valueOf(e.getEnergyConsumption())).reduce(BigDecimal.ZERO, BigDecimal::add);
+                    BigDecimal totalReduction = weekEmissions.stream().map(e -> BigDecimal.valueOf(e.getCarbonReduction())).reduce(BigDecimal.ZERO, BigDecimal::add);
+                    BigDecimal energyPer100km = BigDecimal.ZERO;
+                    if (totalMileage.compareTo(BigDecimal.ZERO) > 0) {
+                        energyPer100km = totalEnergy.divide(totalMileage, CALCULATION_SCALE, ROUNDING_MODE).multiply(BigDecimal.valueOf(100));
+                    }
+                    return new DrivingTimeSeriesPoint(
+                        weekStartDate != null ? weekStartDate.toString() : "Week " + weekNum,
+                        totalMileage.setScale(2, ROUNDING_MODE),
+                        totalEnergy.setScale(2, ROUNDING_MODE),
+                        totalReduction.setScale(2, ROUNDING_MODE),
+                        energyPer100km.setScale(2, ROUNDING_MODE)
+                    );
+                })
+                .collect(Collectors.toList());
         }
-        
-        if (metrics.contains("efficiency")) {
-             BigDecimal efficiency = BigDecimal.ZERO;
-             if (totalMileage.compareTo(BigDecimal.ZERO) > 0) {
-                 efficiency = totalEnergy.divide(totalMileage, CALCULATION_SCALE, ROUNDING_MODE).multiply(BigDecimal.valueOf(100));
-             }
-            drivingData.put("efficiency", efficiency.setScale(2, ROUNDING_MODE));
+
+        if ("month".equalsIgnoreCase(groupBy)) {
+             // Group by month
+            Map<YearMonth, List<CarbonEmission>> groupedByMonth = emissions.stream()
+                .collect(Collectors.groupingBy(e -> YearMonth.from(e.getCalculationTime())));
+
+            return groupedByMonth.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey()) // Sort by month
+                .map(entry -> {
+                    YearMonth yearMonth = entry.getKey();
+                    List<CarbonEmission> monthEmissions = entry.getValue();
+
+                    BigDecimal totalMileage = monthEmissions.stream().map(e -> BigDecimal.valueOf(e.getDistance())).reduce(BigDecimal.ZERO, BigDecimal::add);
+                    BigDecimal totalEnergy = monthEmissions.stream().map(e -> BigDecimal.valueOf(e.getEnergyConsumption())).reduce(BigDecimal.ZERO, BigDecimal::add);
+                    BigDecimal totalReduction = monthEmissions.stream().map(e -> BigDecimal.valueOf(e.getCarbonReduction())).reduce(BigDecimal.ZERO, BigDecimal::add);
+                    BigDecimal energyPer100km = BigDecimal.ZERO;
+                    if (totalMileage.compareTo(BigDecimal.ZERO) > 0) {
+                        energyPer100km = totalEnergy.divide(totalMileage, CALCULATION_SCALE, ROUNDING_MODE).multiply(BigDecimal.valueOf(100));
+                    }
+                    return new DrivingTimeSeriesPoint(
+                        yearMonth.atDay(1).toString(),
+                        totalMileage.setScale(2, ROUNDING_MODE),
+                        totalEnergy.setScale(2, ROUNDING_MODE),
+                        totalReduction.setScale(2, ROUNDING_MODE),
+                        energyPer100km.setScale(2, ROUNDING_MODE)
+                    );
+                })
+                .collect(Collectors.toList());
         }
-        
-        return drivingData;
+
+        log.warn("Unsupported groupBy value: {}. Defaulting to empty list.", groupBy);
+        return Collections.emptyList(); // Default case or if groupBy is unsupported
+    }
+
+    @Override
+    public List<HeatmapDataPoint> getVehicleHeatmapData(String vin, LocalDate startDate, LocalDate endDate, String valueType) {
+        log.info("Fetching heatmap data for VIN: {}, Start: {}, End: {}, ValueType: {}", vin, startDate, endDate, valueType);
+        Vehicle vehicle = vehicleRepository.findById(vin)
+                .orElseThrow(() -> new ResourceNotFoundException("Vehicle", vin));
+
+        LocalDateTime startDateTime = startDate.atStartOfDay();
+        LocalDateTime endDateTime = endDate.plusDays(1).atStartOfDay();
+
+        // Fetch location and reduction data
+        List<Object[]> locationData = carbonEmissionRepository.findLocationAndReductionByVehicleAndTimeRange(
+            vehicle, startDateTime, endDateTime);
+
+        if ("frequency".equalsIgnoreCase(valueType)) {
+            // Aggregate by frequency (simple count per coordinate pair)
+            // Note: Floating point comparison for grouping can be tricky. 
+            // Consider rounding or using a spatial indexing approach for large datasets.
+            Map<LatLon, Long> frequencyMap = locationData.stream()
+                .filter(obj -> obj[0] instanceof Double && obj[1] instanceof Double) // Ensure data types
+                .map(obj -> new LatLon((Double) obj[1], (Double) obj[0])) // Create LatLon key (lat, lon)
+                .collect(Collectors.groupingBy(ll -> ll, Collectors.counting()));
+
+            return frequencyMap.entrySet().stream()
+                .map(entry -> new HeatmapDataPoint(entry.getKey().lat, entry.getKey().lon, entry.getValue().doubleValue()))
+                .collect(Collectors.toList());
+                
+        } else if ("carbonReduction".equalsIgnoreCase(valueType)) {
+             // Aggregate by summing carbon reduction per coordinate pair
+            Map<LatLon, Double> reductionMap = locationData.stream()
+                .filter(obj -> obj[0] instanceof Double && obj[1] instanceof Double && obj[2] instanceof Number) // Ensure data types
+                .collect(Collectors.groupingBy(
+                    obj -> new LatLon((Double) obj[1], (Double) obj[0]), // Group by LatLon
+                    Collectors.summingDouble(obj -> ((Number) obj[2]).doubleValue()) // Sum reduction
+                ));
+                
+            return reductionMap.entrySet().stream()
+                .map(entry -> new HeatmapDataPoint(entry.getKey().lat, entry.getKey().lon, entry.getValue()))
+                .collect(Collectors.toList());
+                
+        } else if ("duration".equalsIgnoreCase(valueType)) {
+             // TODO: Implement duration aggregation if timestamp data per coordinate is available
+             log.warn("Heatmap aggregation by 'duration' is not yet implemented.");
+             return Collections.emptyList();
+             
+        } else {
+             log.warn("Unsupported valueType for heatmap: {}. Defaulting to frequency or empty list.", valueType);
+             // Defaulting to frequency as a fallback for now
+             Map<LatLon, Long> frequencyMap = locationData.stream()
+                .filter(obj -> obj[0] instanceof Double && obj[1] instanceof Double)
+                .map(obj -> new LatLon((Double) obj[1], (Double) obj[0]))
+                .collect(Collectors.groupingBy(ll -> ll, Collectors.counting()));
+            return frequencyMap.entrySet().stream()
+                .map(entry -> new HeatmapDataPoint(entry.getKey().lat, entry.getKey().lon, entry.getValue().doubleValue()))
+                .collect(Collectors.toList());
+        }
+    }
+
+    // Helper class for grouping by Lat/Lon (implement equals and hashCode)
+    private static class LatLon {
+        final double lat;
+        final double lon;
+
+        LatLon(double lat, double lon) {
+            // Consider rounding for grouping stability if needed
+            this.lat = lat; 
+            this.lon = lon;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            LatLon latLon = (LatLon) o;
+            return Double.compare(latLon.lat, lat) == 0 && Double.compare(latLon.lon, lon) == 0;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(lat, lon);
+        }
     }
 
     @Override
@@ -298,51 +482,17 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         return predictions;
     }
 
+    @Deprecated
     @Override
-    public List<Map<String, Object>> getHeatmapData(LocalDateTime date, String resolution) {
-        // Determine the time range based on the input date (usually for the entire day)
-        LocalDateTime startTime = date.toLocalDate().atStartOfDay(); // Start of the given day
-        LocalDateTime endTime = startTime.plusDays(1); // End of the given day (exclusive)
-
-        log.info("Fetching heatmap data points between {} and {}", startTime, endTime);
-
-        // Fetch data points using the new repository method
-        List<Map<String, Object>> heatmapPoints = carbonEmissionRepository.findHeatmapDataPoints(startTime, endTime);
-
-        log.info("Found {} heatmap data points", heatmapPoints.size());
-
-        // The repository query already aliases columns to lat, lng, count.
-        // We might need further processing or aggregation based on 'resolution' if needed,
-        // but the base query provides individual points suitable for many heatmap libraries.
-        // For now, we return the raw points directly as the format matches common heatmap libraries.
-
-        // Example: If resolution was 'hour', we could aggregate here:
-        // if ("hour".equalsIgnoreCase(resolution)) {
-        //     return heatmapPoints.stream()
-        //         .collect(Collectors.groupingBy(
-        //             p -> ((LocalDateTime)p.get("calculationTime")).getHour(), // Assuming calculationTime was fetched
-        //             Collectors.summingDouble(p -> ((Number)p.get("count")).doubleValue())
-        //         )).entrySet().stream()
-        //         .map(entry -> Map.of("hour", entry.getKey(), "value", entry.getValue()))
-        //         .collect(Collectors.toList());
-        // }
-
-        // Return the list of points {lat, lng, count}
-        // Ensure the count value is a Number (Double in this case)
-        return heatmapPoints.stream()
-                .peek(point -> {
-                    // Optional: Ensure count is a valid number, default to 0 if not
-                    Object countObj = point.get("count");
-                    if (!(countObj instanceof Number)) {
-                        point.put("count", 0.0);
-                    } else {
-                         // Ensure lat/lng are also doubles
-                         Object latObj = point.get("lat");
-                         Object lngObj = point.get("lng");
-                         if (!(latObj instanceof Double)) point.put("lat", 0.0);
-                         if (!(lngObj instanceof Double)) point.put("lng", 0.0);
-                    }
-                })
-                .collect(Collectors.toList());
+    public Map<String, Object> getDrivingData(String vin, LocalDateTime startDate, LocalDateTime endDate, List<String> metrics) {
+        log.warn("Deprecated getDrivingData called for VIN: {}. Use getDrivingDataSummary.", vin);
+        // Call the new summary method and convert DTO to Map for backward compatibility (if needed)
+        DrivingData summary = getDrivingDataSummary(vin, startDate.toLocalDate(), endDate.toLocalDate());
+        Map<String, Object> resultMap = new HashMap<>();
+        resultMap.put("totalMileage", summary.getTotalMileage());
+        resultMap.put("totalEnergy", summary.getTotalEnergy());
+        resultMap.put("totalCarbonReduction", summary.getTotalCarbonReduction());
+        resultMap.put("averageEfficiency", summary.getAverageEfficiency());
+        return resultMap;
     }
 } 

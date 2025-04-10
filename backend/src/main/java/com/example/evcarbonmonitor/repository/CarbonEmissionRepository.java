@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.time.LocalDate;
 
 @Repository
 public interface CarbonEmissionRepository extends JpaRepository<CarbonEmission, Long> {
@@ -68,4 +69,55 @@ public interface CarbonEmissionRepository extends JpaRepository<CarbonEmission, 
            "WHERE ce.calculationTime >= :startTime AND ce.calculationTime < :endTime " +
            "AND ce.latitude IS NOT NULL AND ce.longitude IS NOT NULL")
     List<Map<String, Object>> findHeatmapDataPoints(@Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime);
+
+    /**
+     * 定义一个投影接口，用于接收按天聚合的结果。
+     * 字段名需要与 JPQL 查询中的 AS 别名匹配。
+     */
+    public interface DailyDrivingAggregate {
+        LocalDate getCalculationDate();
+        Double getTotalDistance();
+        Double getTotalEnergyConsumption();
+        Double getTotalCarbonReduction();
+    }
+
+    /**
+     * 按天聚合指定车辆在时间范围内的行驶数据。
+     * @param vehicle 车辆实体
+     * @param startDateTime 开始时间
+     * @param endDateTime 结束时间 (exclusive)
+     * @return 按天聚合的数据列表
+     */
+    @Query("SELECT DATE(c.calculationTime) as calculationDate, " +
+           "SUM(c.distance) as totalDistance, " +
+           "SUM(c.energyConsumption) as totalEnergyConsumption, " +
+           "SUM(c.carbonReduction) as totalCarbonReduction " +
+           "FROM CarbonEmission c " +
+           "WHERE c.vehicle = :vehicle " +
+           "AND c.calculationTime >= :startDateTime AND c.calculationTime < :endDateTime " +
+           "GROUP BY DATE(c.calculationTime) " +
+           "ORDER BY calculationDate ASC")
+    List<DailyDrivingAggregate> findDailyDrivingAggregatesByVehicleAndTimeRange(
+            @Param("vehicle") Vehicle vehicle,
+            @Param("startDateTime") LocalDateTime startDateTime,
+            @Param("endDateTime") LocalDateTime endDateTime);
+
+
+    /**
+     * 查询指定车辆在时间范围内的位置和碳减排数据，用于热力图。
+     * 仅包含有有效经纬度的数据。
+     * @param vehicle 车辆实体
+     * @param startDateTime 开始时间
+     * @param endDateTime 结束时间 (exclusive)
+     * @return 包含经度、纬度、碳减排量的对象列表 (Object[] {longitude, latitude, carbonReduction})
+     */
+    @Query("SELECT c.longitude, c.latitude, c.carbonReduction " +
+           "FROM CarbonEmission c " +
+           "WHERE c.vehicle = :vehicle " +
+           "AND c.calculationTime >= :startDateTime AND c.calculationTime < :endDateTime " +
+           "AND c.latitude IS NOT NULL AND c.longitude IS NOT NULL")
+    List<Object[]> findLocationAndReductionByVehicleAndTimeRange(
+            @Param("vehicle") Vehicle vehicle,
+            @Param("startDateTime") LocalDateTime startDateTime,
+            @Param("endDateTime") LocalDateTime endDateTime);
 } 
