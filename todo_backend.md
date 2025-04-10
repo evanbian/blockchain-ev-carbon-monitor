@@ -43,7 +43,7 @@
 - [ ] 碳减排计算服务
   - [ ] 基于国标方法学的计算实现
   - [ ] 历史数据聚合分析
-- [ ] 碳积分管理服务
+- [x] 碳积分管理服务
 - [x] 异常监控服务
   - [x] 告警数据模型定义 (Alert 实体)
   - [x] 告警控制器(Controller) (增删改查基础接口)
@@ -55,10 +55,20 @@
   - [x] 统一 Controller 路径 (`/api/v1/...`)
   - [ ] 实时告警逻辑 (待实现)
   - [ ] 告警规则配置 (待实现)
+- [ ] 数据分析服务 - 车辆分析接口实现 & 优化
+  - [ ] 实现车辆行驶时间序列接口 (`/driving/:vin/timeseries`)
+  - [ ] 实现车辆热力图数据接口 (`/heatmap/:vin`)
+  - [ ] 优化车辆行驶汇总数据接口 (`/driving/:vin`) 逻辑
+- [ ] 车辆分析接口 (`VehicleAnalyticsController`) 实现
+  - [ ] 实现车辆行驶时间序列接口 (`/api/v1/vehicles/:vin/analytics/timeseries`)
+  - [ ] 实现车辆热力图数据接口 (`/api/v1/vehicles/:vin/analytics/heatmap`)
+  - [ ] 实现车辆行驶汇总数据接口 (`/api/v1/vehicles/:vin/analytics`)
+  - [ ] 检查并确认车辆预测接口 (`/api/v1/vehicles/:vin/analytics/predictions`) Service 逻辑
 - [ ] 数据分析服务 - 进一步优化
-  - [ ] 实现更复杂的预测模型 (如 ARIMA)
-  - [ ] 实现按周分组的趋势分析
-  - [ ] 实现热力图数据的后端聚合 (如果前端需要)
+  - [ ] 全局数据分析服务 (`AnalyticsController`) 优化
+    - [ ] 实现更复杂的预测模型 (如 ARIMA)
+    - [ ] 实现按周分组的趋势分析 (可能包含在 timeseries 接口中)
+    - [ ] 实现全局热力图数据的后端聚合 (如果需要)
 
 ### 数据处理
 - [ ] 索引优化 (进一步检查数据库索引)

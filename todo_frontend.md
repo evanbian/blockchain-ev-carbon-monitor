@@ -75,6 +75,18 @@
 
 ## 待完成任务
 
+### 功能实现
+- [ ] 实现告警详情抽屉 (`AlertDetailDrawer`) 的数据加载和展示 (需要对接 `GET /api/v1/alerts/:id`)。
+- [ ] 实现告警状态更新功能 (例如，在详情中添加"确认"/"解决"按钮，对接 `PUT /api/v1/alerts/:id/status`)。
+- [ ] 确认并实现筛选器中 "已确认" (`acknowledged`) 状态的处理逻辑 (当前未发送给后端)。
+- [ ] **车辆分析页面对接:**
+  - [ ] 对接车辆行驶统计汇总接口 (`GET /api/v1/vehicles/:vin/analytics`)
+  - [ ] 对接车辆行驶时间序列接口 (`GET /api/v1/vehicles/:vin/analytics/timeseries`) 并更新图表
+  - [ ] 对接车辆热力图数据接口 (`GET /api/v1/vehicles/:vin/analytics/heatmap`) 并更新热力图
+  - [ ] 对接车辆预测接口 (`GET /api/v1/vehicles/:vin/analytics/predictions`)
+- [ ] 完善其他模块 (车辆管理、数据分析、区块链) 的前端页面与 API 对接。
+- [ ] 实现用户认证/登录流程。
+
 ### 组件优化
 - [ ] 组件单元测试编写
 - [ ] 性能优化，特别是图表组件

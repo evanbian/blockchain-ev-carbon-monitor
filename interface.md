@@ -273,17 +273,16 @@
   }
   ```
 
-#### 2.4 获取车辆行驶数据
+#### 2.4 获取车辆行驶统计数据 (汇总)
 
-- **URL**: `/api/v1/analytics/driving/:vin`
+- **URL**: `/api/v1/vehicles/:vin/analytics`
 - **Method**: `GET`
-- **描述**: 获取指定车辆在指定时间范围内的详细行驶统计数据。
+- **描述**: 获取指定车辆在指定时间范围内的**汇总**行驶统计数据。
 - **URL参数**:
   - `vin` (必填): 车辆VIN码
 - **请求参数**:
-  - `startDate` (必填): 开始日期时间, 格式 `YYYY-MM-DDTHH:mm:ss`
-  - `endDate` (必填): 结束日期时间, 格式 `YYYY-MM-DDTHH:mm:ss`
-  - `metrics` (必填): 需要获取的指标列表 (如 `mileage`, `energy`, `carbonReduction`, `efficiency`), 多个指标用逗号分隔或作为数组传递。
+  - `startDate` (必填): 开始日期, 格式 `YYYY-MM-DD`
+  - `endDate` (必填): 结束日期, 格式 `YYYY-MM-DD`
 - **响应示例**:
   ```json
   {
@@ -299,9 +298,46 @@
   }
   ```
 
-#### 2.5 获取预测数据 (新增)
+#### 2.5 获取车辆行驶时间序列数据
 
-- **URL**: `/api/v1/analytics/predictions/:vin`
+- **URL**: `/api/v1/vehicles/:vin/analytics/timeseries`
+- **Method**: `GET`
+- **描述**: 获取指定车辆在选定时间范围内，按时间单位分组的行驶和能耗数据。
+- **URL 参数**:
+  - `vin` (必填): 车辆 VIN 码。
+- **请求参数 (Query Params)**:
+  - `startDate` (必填): 开始日期, 格式 `YYYY-MM-DD`。
+  - `endDate` (必填): 结束日期, 格式 `YYYY-MM-DD`。
+  - `groupBy` (必填): 分组方式 (`day`, `week`, `month`)。
+- **响应示例 (`groupBy=day`)**: 
+  ```json
+  {
+    "success": true,
+    "code": 200,
+    "message": "获取成功",
+    "data": [
+      {
+        "date": "2024-04-07",    
+        "mileage": 55.2,        
+        "energy": 10.1,         
+        "carbonReduction": 15.8, 
+        "efficiency": 18.3      
+      },
+      {
+        "date": "2024-04-08",
+        "mileage": 61.0,
+        "energy": 11.5,
+        "carbonReduction": 17.9,
+        "efficiency": 18.8
+      }
+      // ... 更多按时间聚合的数据
+    ]
+  }
+  ```
+
+#### 2.6 获取预测数据
+
+- **URL**: `/api/v1/vehicles/:vin/analytics/predictions`
 - **Method**: `GET`
 - **描述**: 获取指定车辆未来一段时间的碳减排和碳积分预测数据。
 - **URL参数**:
@@ -331,15 +367,18 @@
   }
   ```
 
-#### 2.6 获取热力图数据 (新增)
+#### 2.7 获取车辆热力图数据
 
-- **URL**: `/api/v1/analytics/heatmap`
+- **URL**: `/api/v1/vehicles/:vin/analytics/heatmap`
 - **Method**: `GET`
-- **描述**: 获取用于生成地理空间热力图的数据点。
-- **请求参数**:
-  - `date` (必填): 需要查询的日期时间, 格式 `YYYY-MM-DDTHH:mm:ss` (通常传递某天的开始时间，后端会查询整天数据)。
-  - `resolution` (可选): 分辨率参数 (当前后端实现未使用，保留供未来扩展)。
-- **响应示例**:
+- **描述**: 获取指定车辆在选定时间范围内的地理活动数据点，用于生成热力图。
+- **URL 参数**:
+  - `vin` (必填): 车辆 VIN 码。
+- **请求参数 (Query Params)**:
+  - `startDate` (必填): 开始日期, 格式 `YYYY-MM-DD`。
+  - `endDate` (必填): 结束日期, 格式 `YYYY-MM-DD`。
+  - `valueType` (可选): 热力图权重值的类型 (`frequency`, `duration`, `carbonReduction`)，默认 `frequency`。
+- **响应示例 (`valueType=frequency`)**: 
   ```json
   {
     "success": true,
@@ -347,19 +386,21 @@
     "message": "获取成功",
     "data": [
       {
-        "lat": 39.9042,  // 纬度
-        "lng": 116.4074, // 经度
-        "count": 25.5   // 权重值 (例如: 该位置的碳减排量)
+        "lat": 39.915,  
+        "lng": 116.404, 
+        "count": 15     
       },
       {
-        "lat": 31.2304,
-        "lng": 121.4737,
-        "count": 15.8
+        "lat": 39.900,
+        "lng": 116.391,
+        "count": 8
       }
       // ... 更多数据点
     ]
   }
   ```
+
+#### 2.8 获取全局热力图数据 (已移除)
 
 ### 3. 告警监控接口 (新增)
 
